@@ -7,18 +7,26 @@
 
 import Foundation
 import SwiftData
+import CoreBluetooth
 
 @Observable
 class BroadcastViewModel {
 	private var modelContext: ModelContext
+	private var permissionService: PermissionService
 	
 	private(set) var projects: [BroadcastProject] = []
+	
+	var bluetoothAuthorization: CBManagerAuthorization {
+		permissionService.bluetoothAuthorization
+	}
+	var bluetoothState: CBManagerState {
+		permissionService.bluetoothState
+	}
 	
 	var currentBroadcastingBeacon: BroadcastBeacon?
 	var selectedBeacon: BroadcastBeacon?
 	
 	var searchTerm: String = ""
-	
 	var filteredProjectGroups: [BroadcastProjectGroup] {
 		if searchTerm.isEmpty {
 			return projects.map { BroadcastProjectGroup(project: $0, beacons: $0.sortedBeacons) }
@@ -51,8 +59,9 @@ class BroadcastViewModel {
 	var addMajorID: Int? = nil
 	var addMinorID: Int? = nil
 	
-	init(modelContext: ModelContext) {
+	init(modelContext: ModelContext, permissionService: PermissionService) {
 		self.modelContext = modelContext
+		self.permissionService = permissionService
 	}
 	
 	func fetchData() {
@@ -62,6 +71,12 @@ class BroadcastViewModel {
 			))
 		} catch {
 			print("ERROR > Failed populating BroadcastViewModel: \(error)")
+		}
+	}
+	
+	func requestBluetoothPermission() {
+		Task {
+			await permissionService.requestBluetoothPermission()
 		}
 	}
 	

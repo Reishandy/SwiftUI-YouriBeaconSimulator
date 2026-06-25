@@ -27,6 +27,7 @@ struct EmptyStateView: View {
 				Text(subtitle)
 					.opacity(0.8)
 			}
+			.multilineTextAlignment(.center)
 			
 			if let action = action, let actionText = actionText {
 				Button {
@@ -39,6 +40,7 @@ struct EmptyStateView: View {
 			}
 		}
 		.frame(maxWidth: .infinity, maxHeight: .infinity)
+		.padding(.horizontal, 20)
     }
 }
 

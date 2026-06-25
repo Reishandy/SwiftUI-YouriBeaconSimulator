@@ -11,22 +11,27 @@ import SwiftData
 struct ContentView: View {
 	@Environment(\.modelContext) private var modelContext
 	
-    var body: some View {
+	@State var permissionService = PermissionService()
+	
+	var body: some View {
 		TabView {
-			BroadcastView(broadcastViewModel: BroadcastViewModel(modelContext: modelContext))
-				.tabItem {
-					Label("Broadcast", systemImage: "sensor.radiowaves.left.and.right.fill")
-				}
+			BroadcastView(broadcastViewModel: BroadcastViewModel(
+				modelContext: modelContext,
+				permissionService: permissionService)
+			)
+			.tabItem {
+				Label("Broadcast", systemImage: "sensor.radiowaves.left.and.right.fill")
+			}
 			
 			DiscoverView()
 				.tabItem {
 					Label("Discover", systemImage: "dot.radiowaves.up.forward")
 				}
 		}
-    }
+	}
 }
 
 #Preview {
-    ContentView()
+	ContentView()
 		.modelContainer(PreviewContainer.shared)
 }

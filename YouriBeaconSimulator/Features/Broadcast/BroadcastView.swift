@@ -7,15 +7,50 @@
 
 import SwiftUI
 import SwiftData
+import CoreBluetooth
 
 struct BroadcastView: View {
 	@State var broadcastViewModel: BroadcastViewModel
 	
+	// TODO: Check what happens if we turn of bt when is broadcasting
+	//			escpecialy the currentBroadcastingBeacon
 	var body: some View {
 		NavigationStack {
-			// TODO: Permission state
 			Group {
-				if broadcastViewModel.projects.isEmpty {
+				if broadcastViewModel.bluetoothAuthorization == .notDetermined {
+					EmptyStateView(
+						systemImage: "sensor.radiowaves.left.and.right",
+						title: "Broadcast as an iBeacon",
+						subtitle: "To turn your device into a simulator, we need permission to use your Bluetooth antenna.",
+						actionText: "Enable Broadcasting"
+					) {
+						broadcastViewModel.requestBluetoothPermission()
+					}
+				} else if broadcastViewModel.bluetoothAuthorization == .denied ||
+							broadcastViewModel.bluetoothAuthorization == .restricted {
+					EmptyStateView(
+						systemImage: "exclamationmark.lock.fill",
+						title: "Bluetooth Access Blocked",
+						subtitle: "Please enable Bluetooth permission in Settings to simulate an iBeacon.",
+						actionText: "Open Settings"
+					) {
+#if os(iOS)
+						if let url = URL(string: UIApplication.openSettingsURLString) {
+							UIApplication.shared.open(url)
+						}
+#endif
+					}
+				} else if broadcastViewModel.bluetoothAuthorization == .allowedAlways &&
+							broadcastViewModel.bluetoothState == .poweredOff {
+					
+					EmptyStateView(
+						systemImage: "exclamationmark.triangle.fill",
+						title: "Bluetooth is Powered Off",
+						subtitle: "Please turn on Bluetooth from your Control Center or Settings to start broadcasting.",
+						actionText: nil
+					)
+					
+				} else if broadcastViewModel.projects.isEmpty {
 					EmptyStateView(
 						systemImage: "antenna.radiowaves.left.and.right.slash",
 						title: "No iBeacon here",
@@ -37,19 +72,6 @@ struct BroadcastView: View {
 					listView
 				}
 			}
-			.animation(.default, value: broadcastViewModel.searchTerm)
-#if os(iOS)
-			.searchable(
-				text: $broadcastViewModel.searchTerm,
-				placement: .navigationBarDrawer(displayMode: .always),
-				prompt: "Search Project or Beacon..."
-			)
-#else
-			.searchable(
-				text: $broadcastViewModel.searchTerm,
-				prompt: "Search Project or Beacon..."
-			)
-#endif
 			.navigationTitle("Broadcast")
 			.toolbar {
 				ToolbarItem(placement: .primaryAction) {
@@ -58,6 +80,7 @@ struct BroadcastView: View {
 					} label: {
 						Label("Add", systemImage: "plus")
 					}
+					.disabled(broadcastViewModel.bluetoothAuthorization != .allowedAlways)
 				}
 			}
 			.sheet(isPresented: $broadcastViewModel.isAddSheetPresented) {
@@ -166,9 +189,22 @@ struct BroadcastView: View {
 				.headerProminence(.increased)
 			}
 		}
+		.animation(.default, value: broadcastViewModel.searchTerm)
+#if os(iOS)
+		.searchable(
+			text: $broadcastViewModel.searchTerm,
+			placement: .navigationBarDrawer(displayMode: .always),
+			prompt: "Search Project or Beacon..."
+		)
+#else
+		.searchable(
+			text: $broadcastViewModel.searchTerm,
+			prompt: "Search Project or Beacon..."
+		)
+#endif
 	}
 }
 
 #Preview {
-	BroadcastView(broadcastViewModel: BroadcastViewModel(modelContext: PreviewContainer.shared.mainContext))
+	BroadcastView(broadcastViewModel: BroadcastViewModel(modelContext: PreviewContainer.shared.mainContext, permissionService: PermissionService()))
 }
