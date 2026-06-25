@@ -6,37 +6,53 @@
 //
 
 import SwiftUI
+import SwiftData // TODO: Debug
 
 struct BroadcastView: View {
-	// TODO: Add a default on the measured tx power slider that sets to -59 on form
 	
+	// TODO: Debug change to viewmodel
+	@Query(sort: \BroadcastProject.name) private var projects: [BroadcastProject]
+	@State private var currentBroadcastingBeacon: BroadcastBeacon?
+	
+	
+	// TODO: Add a default on the measured tx power slider that sets to -59 on form
+	// TODO: Searchable
 	// TODO: Animation
 	var body: some View {
 		NavigationStack {
 			// TODO: Group by uuid sort by major asc
-			// TODO: Delete confirmation sheet
 			// TODO: Empty and permission state
 			List {
-				ForEach(1...5, id: \.self) { sec in
+				ForEach(projects) { project in
 					Section {
-						ForEach(1...3, id: \.self) { num in
+						ForEach(project.beacons ?? []) { beacon in
 							BroadcastItemView(
-								broadcastBeacon: BroadcastBeacon(
-									projectName: "Project \(sec)", beaconUUID: UUID().uuidString, beaconName: "Beacon \(num)", majorID: sec, minorID: Int.random(in: 100...999)
-								),
-								isBroadcasting: false,
-								shouldDisableBroadcast: false,
-								onBroadcastClick: {},
-								onDeleteClick: {},
+								broadcastBeacon: beacon,
+								isBroadcasting: currentBroadcastingBeacon == beacon,
+								shouldDisableBroadcast: currentBroadcastingBeacon != nil && currentBroadcastingBeacon != beacon,
+								onBroadcastClick: {
+									if currentBroadcastingBeacon == beacon {
+										currentBroadcastingBeacon = nil
+									} else {
+										currentBroadcastingBeacon = beacon
+									}
+								},
+								onDeleteClick: {
+									// TODO: Delete confirmation sheet
+								},
 								onEditCLick: {
 									// TODO: Share Name, UUID, Major, Minor
 								},
-								onShareClick: {},
-								onMeasuredTxPowerChange: { _ in }
+								onShareClick: {
+									// TODO: Share
+								},
+								onMeasuredTxPowerChange: { _ in
+									// TODO: on TX change
+								}
 							)
 						}
 					} header: {
-						BroadcastSectionHeaderView(title: "Project \(sec)", uuid: UUID().uuidString)
+						BroadcastSectionHeaderView(title: project.name, uuid: project.proximityUUID)
 							.padding(.leading, -10)
 					}
 					.headerProminence(.increased)
@@ -58,4 +74,5 @@ struct BroadcastView: View {
 
 #Preview {
 	BroadcastView()
+		.modelContainer(PreviewContainer.shared) // TODO: Debug
 }

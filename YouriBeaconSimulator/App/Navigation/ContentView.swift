@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData // TODO: Debug
 
 struct ContentView: View {
     var body: some View {
@@ -25,4 +26,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+		.modelContainer(PreviewContainer.shared) // TODO: Debug
 }

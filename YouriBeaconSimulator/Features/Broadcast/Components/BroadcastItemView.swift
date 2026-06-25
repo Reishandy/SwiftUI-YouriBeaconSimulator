@@ -69,7 +69,7 @@ struct BroadcastItemView: View {
 		}
 		.listRowBackground(shouldDisableBroadcast ? Color.gray.opacity(0.2) : nil)
 		.swipeActions(edge: .trailing, allowsFullSwipe: false) {
-			if !isBroadcasting {
+			if !isBroadcasting && !shouldDisableBroadcast  {
 				Button {
 					onDeleteClick()
 				} label: {
@@ -93,7 +93,7 @@ struct BroadcastItemView: View {
 			}
 		}
 		.contextMenu {
-			if !isBroadcasting {
+			if !isBroadcasting && !shouldDisableBroadcast {
 				Button {
 					onShareClick()
 				} label: {
@@ -126,7 +126,7 @@ struct BroadcastItemView: View {
 		// Simulate other beacon while one is broadcasting
 		BroadcastItemView(
 			broadcastBeacon: BroadcastBeacon(
-				projectName: "Project", beaconUUID: UUID().uuidString, beaconName: "Beacon", majorID: 10, minorID: 11
+				beaconName: "Beacon", majorID: 10, minorID: 11
 			),
 			isBroadcasting: false,
 			shouldDisableBroadcast: isBroadcasting,
@@ -139,7 +139,7 @@ struct BroadcastItemView: View {
 		
 		BroadcastItemView(
 			broadcastBeacon: BroadcastBeacon(
-				projectName: "Project", beaconUUID: UUID().uuidString, beaconName: "Beacon", majorID: 10, minorID: 11
+				beaconName: "Beacon", majorID: 10, minorID: 11
 			),
 			isBroadcasting: isBroadcasting,
 			shouldDisableBroadcast: false,
@@ -153,7 +153,7 @@ struct BroadcastItemView: View {
 		// Simulate other beacon while one is broadcasting
 		BroadcastItemView(
 			broadcastBeacon: BroadcastBeacon(
-				projectName: "Project", beaconUUID: UUID().uuidString, beaconName: "Beacon", majorID: 10, minorID: 11
+				beaconName: "Beacon", majorID: 10, minorID: 11
 			),
 			isBroadcasting: false,
 			shouldDisableBroadcast: isBroadcasting,

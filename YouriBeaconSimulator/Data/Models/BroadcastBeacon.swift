@@ -13,21 +13,29 @@ class BroadcastBeacon: Identifiable, Equatable {
 	var id: UUID
 	var timestamp: Date
 	
-	var projectName: String
-	var beaconUUID: String
 	var beaconName: String
 	var majorID: Int
 	var minorID: Int
 	
-	init(projectName: String, beaconUUID: String, beaconName: String, majorID: Int, minorID: Int) {
+	var project: BroadcastProject?
+	
+	init(beaconName: String, majorID: Int, minorID: Int) {
 		self.id = UUID()
 		self.timestamp = .now
-		self.projectName = projectName
-		self.beaconUUID = beaconUUID
 		self.beaconName = beaconName
 		self.majorID = majorID
 		self.minorID = minorID
 	}
 	
 	// TODO: Share calculated property
+	var shareString: String {
+		"""
+		Project: \(project?.name ?? "Unknown")
+		UUID: \(project?.proximityUUID ?? "Unknown")
+		----------
+		Beacon: \(beaconName)
+		Major: \(majorID)
+		Minor: \(minorID)
+		"""
+	}
 }
