@@ -30,7 +30,7 @@ struct BroadcastView: View {
 							)
 						}
 					} header: {
-						BroadcastSectionHeaderView()
+						BroadcastSectionHeaderView(title: "App Name", uuid: UUID().uuidString)
 							.padding(.leading, -10)
 					}
 					.headerProminence(.increased)

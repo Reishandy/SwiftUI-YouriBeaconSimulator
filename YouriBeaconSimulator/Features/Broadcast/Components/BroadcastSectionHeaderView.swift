@@ -8,16 +8,21 @@
 import SwiftUI
 
 struct BroadcastSectionHeaderView: View {
+	let title: String
+	let uuid: String
+	
+	@State private var copied: Bool = false
+	
     var body: some View {
 		VStack(alignment: .leading) {
-			Text("Group name")
+			Text(title)
 				.font(.title3)
 				.bold()
 				.lineLimit(1)
 				.minimumScaleFactor(0.5)
 			
 			HStack {
-				Text(UUID().uuidString)
+				Text(uuid)
 					.font(.callout.monospaced())
 					.opacity(0.8)
 					.lineLimit(1)
@@ -25,16 +30,27 @@ struct BroadcastSectionHeaderView: View {
 				
 				Spacer()
 				
-				Image(systemName: "document.on.document")
+				Image(systemName: copied ? "checkmark.circle" : "document.on.document")
 					.font(.footnote)
+					.contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer), options: .nonRepeating))
 			}
 			.onTapGesture {
-				// TODO: Copy
+				ClipboardUtilities.copy(uuid)
+				
+				withAnimation() {
+					copied = true
+				}
+				
+				DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+					withAnimation() {
+						copied = false
+					}
+				}
 			}
 		}
     }
 }
 
 #Preview {
-    BroadcastSectionHeaderView()
+    BroadcastSectionHeaderView(title: "Project Name", uuid: UUID().uuidString)
 }
