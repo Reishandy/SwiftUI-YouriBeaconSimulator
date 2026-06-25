@@ -35,6 +35,7 @@ struct EmptyStateView: View {
 				} label: {
 					Text(actionText)
 						.frame(minWidth: 150)
+						.foregroundStyle(.prominentButtonText)
 				}
 				.buttonStyle(.borderedProminent)
 			}
