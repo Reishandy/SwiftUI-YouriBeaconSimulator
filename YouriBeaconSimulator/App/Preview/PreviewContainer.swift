@@ -20,9 +20,6 @@ class PreviewContainer {
 			let project1 = BroadcastProject(name: "Lobby System", proximityUUID: UUID().uuidString)
 			let project2 = BroadcastProject(name: "Meeting Rooms", proximityUUID: UUID().uuidString)
 			
-			container.mainContext.insert(project1)
-			container.mainContext.insert(project2)
-			
 			let beacon1 = BroadcastBeacon(beaconName: "Main Entrance", majorID: 1, minorID: 100)
 			let beacon2 = BroadcastBeacon(beaconName: "Reception Desk", majorID: 1, minorID: 200)
 			let beacon3 = BroadcastBeacon(beaconName: "Room A", majorID: 2, minorID: 101)
@@ -30,6 +27,9 @@ class PreviewContainer {
 			beacon1.project = project1
 			beacon2.project = project1
 			beacon3.project = project2
+			
+			container.mainContext.insert(project1)
+			container.mainContext.insert(project2)
 			
 			return container
 		} catch {

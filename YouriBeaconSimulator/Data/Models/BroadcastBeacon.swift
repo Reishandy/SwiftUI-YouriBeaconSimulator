@@ -27,15 +27,14 @@ class BroadcastBeacon: Identifiable, Equatable {
 		self.minorID = minorID
 	}
 	
-	// TODO: Share calculated property
 	var shareString: String {
 		"""
-		Project: \(project?.name ?? "Unknown")
-		UUID: \(project?.proximityUUID ?? "Unknown")
-		----------
 		Beacon: \(beaconName)
 		Major: \(majorID)
 		Minor: \(minorID)
+		----------
+		UUID: \(project?.proximityUUID ?? "Unknown")
+		Project: \(project?.name ?? "Unknown")
 		"""
 	}
 }

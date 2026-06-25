@@ -27,7 +27,7 @@ struct BroadcastView: View {
 					Section {
 						ForEach(project.beacons ?? []) { beacon in
 							BroadcastItemView(
-								broadcastBeacon: beacon,
+								beacon: beacon,
 								isBroadcasting: currentBroadcastingBeacon == beacon,
 								shouldDisableBroadcast: currentBroadcastingBeacon != nil && currentBroadcastingBeacon != beacon,
 								onBroadcastClick: {
@@ -43,13 +43,13 @@ struct BroadcastView: View {
 								onEditCLick: {
 									// TODO: Share Name, UUID, Major, Minor
 								},
-								onShareClick: {
-									// TODO: Share
-								},
 								onMeasuredTxPowerChange: { _ in
 									// TODO: on TX change
 								}
 							)
+							#if os(macOS)
+							.padding(.vertical, 10)
+							#endif
 						}
 					} header: {
 						BroadcastSectionHeaderView(title: project.name, uuid: project.proximityUUID)
@@ -62,11 +62,15 @@ struct BroadcastView: View {
 			.toolbar {
 				ToolbarItem(placement: .primaryAction) {
 					Button {
-						
+						// TODO: Plus
 					} label: {
 						Label("Add", systemImage: "plus")
 					}
 				}
+				
+//				ToolbarItem(placement: .primaryAction) {
+//					EditButton()
+//				}
 			}
 		}
 	}

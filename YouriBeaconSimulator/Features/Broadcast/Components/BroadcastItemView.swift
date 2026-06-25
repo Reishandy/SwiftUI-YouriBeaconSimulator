@@ -8,14 +8,13 @@
 import SwiftUI
 
 struct BroadcastItemView: View {
-	let broadcastBeacon: BroadcastBeacon
+	let beacon: BroadcastBeacon
 	let isBroadcasting: Bool
 	let shouldDisableBroadcast: Bool
 	
 	let onBroadcastClick: () -> Void
 	let onDeleteClick: () -> Void
 	let onEditCLick: () -> Void
-	let onShareClick: () -> Void
 	let onMeasuredTxPowerChange: (Int) -> Void
 	
 	var body: some View {
@@ -27,38 +26,50 @@ struct BroadcastItemView: View {
 				}
 				
 				VStack(alignment: .leading) {
-					Text(broadcastBeacon.beaconName)
+					Text(beacon.beaconName)
 						.font(.headline)
 					
 					HStack {
-						Text("Major: \(broadcastBeacon.majorID)")
+						Text("Major: \(beacon.majorID)")
 							.font(.subheadline)
 							.opacity(0.8)
 						
-						Text("Minor: \(broadcastBeacon.minorID)")
+						Text("Minor: \(beacon.minorID)")
 							.font(.subheadline)
 							.opacity(0.8)
 					}
 				}
 				.foregroundStyle(shouldDisableBroadcast ? .gray : .primary)
+				.alignmentGuide(.listRowSeparatorLeading) { dimensions in
+					dimensions[.leading]
+				}
 				
 				Spacer()
+				
+				#if os(macOS)
+				buttonComplex
+				#endif
 				
 				Button {
 					withAnimation() {
 						onBroadcastClick()
 					}
 				} label: {
-					Label("Broadcast", systemImage: isBroadcasting ? "square.fill" : "play.fill")
+					Label(isBroadcasting ? "Stop" : "Broadcast", systemImage: isBroadcasting ? "square.fill" : "play.fill")
 						.contentTransition(.symbolEffect(.replace))
 						.foregroundStyle(isBroadcasting ? .red : .primary)
+						#if os(iOS)
 						// Larger hitbox
 						.padding(10)
 						.contentShape(Rectangle())
+						#endif
 				}
+				#if os(iOS)
 				.buttonStyle(.plain)
 				.labelStyle(.iconOnly)
+				#endif
 				.disabled(shouldDisableBroadcast)
+				.geometryGroup()
 			}
 			
 			if isBroadcasting {
@@ -68,53 +79,41 @@ struct BroadcastItemView: View {
 			}
 		}
 		.listRowBackground(shouldDisableBroadcast ? Color.gray.opacity(0.2) : nil)
+		#if os(iOS)
 		.swipeActions(edge: .trailing, allowsFullSwipe: false) {
-			if !isBroadcasting && !shouldDisableBroadcast  {
-				Button {
-					onDeleteClick()
-				} label: {
-					Label("Delete", systemImage: "trash")
-				}
-				.tint(.red)
-				
-				Button {
-					onEditCLick()
-				} label: {
-					Label("Edit", systemImage: "square.and.pencil")
-				}
-				.tint(.orange)
-				
-				Button {
-					onShareClick()
-				} label: {
-					Label("Share", systemImage: "square.and.arrow.up")
-				}
-				.tint(.blue)
-			}
+			buttonComplex
 		}
 		.contextMenu {
-			if !isBroadcasting && !shouldDisableBroadcast {
-				Button {
-					onShareClick()
-				} label: {
-					Label("Share", systemImage: "square.and.arrow.up")
-				}
-				.tint(.blue)
-				
-				Button {
-					onEditCLick()
-				} label: {
-					Label("Edit", systemImage: "square.and.pencil")
-				}
-				.tint(.orange)
-				
-				Button() {
-					onDeleteClick()
-				} label: {
-					Label("Delete", systemImage: "trash")
-				}
-				.tint(.red)
+			buttonComplex
+		}
+		#endif
+	}
+	
+	@ViewBuilder
+	private var buttonComplex: some View {
+		if !isBroadcasting && !shouldDisableBroadcast {
+			Button() {
+				onDeleteClick()
+			} label: {
+				Label("Delete", systemImage: "trash")
 			}
+			.tint(.red)
+			
+			Button {
+				onEditCLick()
+			} label: {
+				Label("Edit", systemImage: "square.and.pencil")
+			}
+			.tint(.orange)
+			
+			ShareLink(
+				item: beacon.shareString,
+				subject: Text(beacon.beaconName),
+				message: Text("iBeacon configuration for \(beacon.beaconName)")
+			) {
+				Label("Share", systemImage: "square.and.arrow.up")
+			}
+			.tint(.blue)
 		}
 	}
 }
@@ -125,7 +124,7 @@ struct BroadcastItemView: View {
 	List {
 		// Simulate other beacon while one is broadcasting
 		BroadcastItemView(
-			broadcastBeacon: BroadcastBeacon(
+			beacon: BroadcastBeacon(
 				beaconName: "Beacon", majorID: 10, minorID: 11
 			),
 			isBroadcasting: false,
@@ -133,12 +132,11 @@ struct BroadcastItemView: View {
 			onBroadcastClick: {},
 			onDeleteClick: {},
 			onEditCLick: {},
-			onShareClick: {},
 			onMeasuredTxPowerChange: { _ in }
 		)
 		
 		BroadcastItemView(
-			broadcastBeacon: BroadcastBeacon(
+			beacon: BroadcastBeacon(
 				beaconName: "Beacon", majorID: 10, minorID: 11
 			),
 			isBroadcasting: isBroadcasting,
@@ -146,13 +144,12 @@ struct BroadcastItemView: View {
 			onBroadcastClick: { isBroadcasting.toggle() },
 			onDeleteClick: {},
 			onEditCLick: {},
-			onShareClick: {},
 			onMeasuredTxPowerChange: { _ in }
 		)
 		
 		// Simulate other beacon while one is broadcasting
 		BroadcastItemView(
-			broadcastBeacon: BroadcastBeacon(
+			beacon: BroadcastBeacon(
 				beaconName: "Beacon", majorID: 10, minorID: 11
 			),
 			isBroadcasting: false,
@@ -160,7 +157,6 @@ struct BroadcastItemView: View {
 			onBroadcastClick: {},
 			onDeleteClick: {},
 			onEditCLick: {},
-			onShareClick: {},
 			onMeasuredTxPowerChange: { _ in }
 		)
 	}
