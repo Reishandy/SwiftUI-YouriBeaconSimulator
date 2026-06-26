@@ -96,7 +96,7 @@ struct BroadcastView: View {
 					} label: {
 						Label("Add", systemImage: "plus")
 					}
-					.disabled(broadcastViewModel.bluetoothAuthorization != .allowedAlways)
+					.disabled(broadcastViewModel.bluetoothAuthorization != .allowedAlways || broadcastViewModel.currentBroadcastingBeacon != nil)
 				}
 			}
 			.sheet(isPresented: $broadcastViewModel.isAddSheetPresented) {
@@ -187,8 +187,8 @@ struct BroadcastView: View {
 								broadcastViewModel.selectedBeacon = beacon
 								broadcastViewModel.isEditSheetPresented = true
 							},
-							onMeasuredTxPowerChange: { _ in
-								// TODO: on TX change
+							onMeasuredTxPowerChange: { newValue in
+								broadcastViewModel.updateTxPower(to: Int8(newValue))
 							}
 						)
 					}
@@ -205,5 +205,7 @@ struct BroadcastView: View {
 }
 
 #Preview {
-	BroadcastView(broadcastViewModel: BroadcastViewModel(modelContext: PreviewContainer.shared.mainContext, permissionService: PermissionService()))
+	let permissionService = PermissionService()
+	
+	BroadcastView(broadcastViewModel: BroadcastViewModel(modelContext: PreviewContainer.shared.mainContext, permissionService: permissionService, broadcastService: BeaconBroadcastService(permissionService: permissionService)))
 }

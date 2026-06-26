@@ -11,14 +11,16 @@ import SwiftData
 struct ContentView: View {
 	@Environment(\.modelContext) private var modelContext
 	
-	@State var permissionService = PermissionService()
+	let permissionService: PermissionService
+	let beaconBroadcastService: BeaconBroadcastService
 	
 	var body: some View {
 		TabView {
 			BroadcastView(broadcastViewModel: BroadcastViewModel(
 				modelContext: modelContext,
-				permissionService: permissionService)
-			)
+				permissionService: permissionService,
+				broadcastService: beaconBroadcastService
+			))
 			.tabItem {
 				Label("Broadcast", systemImage: "sensor.radiowaves.left.and.right.fill")
 			}
@@ -32,6 +34,11 @@ struct ContentView: View {
 }
 
 #Preview {
-	ContentView()
-		.modelContainer(PreviewContainer.shared)
+	let permissionService = PermissionService()
+	
+	ContentView(
+		permissionService: permissionService,
+		beaconBroadcastService: BeaconBroadcastService(permissionService: permissionService)
+	)
+	.modelContainer(PreviewContainer.shared)
 }

@@ -13,6 +13,7 @@ import CoreBluetooth
 class BroadcastViewModel {
 	private var modelContext: ModelContext
 	private var permissionService: PermissionService
+	private var broadcastService: BeaconBroadcastService
 	
 	private(set) var projects: [BroadcastProject] = []
 	
@@ -23,7 +24,9 @@ class BroadcastViewModel {
 		permissionService.bluetoothState
 	}
 	
-	var currentBroadcastingBeacon: BroadcastBeacon?
+	var currentBroadcastingBeacon: BroadcastBeacon? {
+		broadcastService.activeBeacon
+	}
 	var selectedBeacon: BroadcastBeacon?
 	
 	var searchTerm: String = ""
@@ -59,11 +62,11 @@ class BroadcastViewModel {
 	var addMajorID: Int? = nil
 	var addMinorID: Int? = nil
 	
-	init(modelContext: ModelContext, permissionService: PermissionService) {
+	init(modelContext: ModelContext, permissionService: PermissionService, broadcastService: BeaconBroadcastService) {
 		self.modelContext = modelContext
 		self.permissionService = permissionService
+		self.broadcastService = broadcastService
 		
-		print("fetching")
 		self.fetchData()
 	}
 	
@@ -161,7 +164,7 @@ class BroadcastViewModel {
 			modelContext.delete(beaconToDelete)
 			
 			if currentBroadcastingBeacon == beaconToDelete {
-				currentBroadcastingBeacon = nil
+				broadcastService.stopBroadcasting()
 			}
 			
 			if let project = parentProject, isLastBeacon {
@@ -174,14 +177,16 @@ class BroadcastViewModel {
 		}
 	}
 	
-	func broadcast(_ beacon: BroadcastBeacon) {
-		// TODO: Proper broadcasting mechanism
+	func broadcast(_ beacon: BroadcastBeacon, defaultTxPower: Int8 = -59) {
 		if currentBroadcastingBeacon == beacon {
-			currentBroadcastingBeacon = nil
+			broadcastService.stopBroadcasting()
 		} else {
-			currentBroadcastingBeacon = beacon
+			broadcastService.stopBroadcasting()
+			broadcastService.startBroadcasting(beacon: beacon, txPower: defaultTxPower)
 		}
-		
-		selectedBeacon = nil
+	}
+	
+	func updateTxPower(to newTxPower: Int8) {
+		broadcastService.updateTxPower(to: newTxPower)
 	}
 }

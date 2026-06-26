@@ -10,9 +10,21 @@ import SwiftData
 
 @main
 struct YouriBeaconSimulatorApp: App {
+	@State var permissionService: PermissionService
+	@State var beaconBroadcastService: BeaconBroadcastService
+	
+	init() {
+		let permissionService = PermissionService()
+		self._permissionService = State(initialValue: permissionService)
+		self._beaconBroadcastService = State(initialValue: BeaconBroadcastService(permissionService: permissionService))
+	}
+	
 	var body: some Scene {
 		WindowGroup {
-			ContentView()
+			ContentView(
+				permissionService: permissionService,
+				beaconBroadcastService: beaconBroadcastService
+			)
 				.modelContainer(for: [BroadcastProject.self, BroadcastProject.self])
 #if os(macOS)
 				.frame(minWidth: 700)

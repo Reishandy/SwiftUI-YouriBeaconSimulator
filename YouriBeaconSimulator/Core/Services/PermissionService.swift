@@ -17,8 +17,8 @@ public class PermissionService: NSObject {
 	public private(set) var bluetoothState: CBManagerState = .unknown
 	public private(set) var locationAuthorization: CLAuthorizationStatus = .notDetermined
 	
-	private var locationManager: CLLocationManager?
-	private var peripheralManager: CBPeripheralManager?
+	var locationManager: CLLocationManager?
+	var peripheralManager: CBPeripheralManager?
 	
 	private var bluetoothContinuation: CheckedContinuation<CBManagerAuthorization, Never>?
 	private var locationContinuation: CheckedContinuation<CLAuthorizationStatus, Never>?
@@ -77,6 +77,8 @@ extension PermissionService: CBPeripheralManagerDelegate {
 	public func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
 		self.bluetoothState = peripheral.state
 		self.bluetoothAuthorization = CBPeripheralManager.authorization
+		
+		NotificationCenter.default.post(name: .bluetoothStateChanged, object: peripheral.state)
 		
 		if CBPeripheralManager.authorization != .notDetermined {
 			bluetoothContinuation?.resume(returning: CBPeripheralManager.authorization)
