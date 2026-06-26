@@ -10,12 +10,12 @@ import SwiftData
 
 @Model
 class BroadcastBeacon: Identifiable, Equatable {
-	var id: UUID
-	var timestamp: Date
+	var id: UUID = UUID()
+	var timestamp: Date = Date.now
 	
-	var beaconName: String
-	var majorID: Int
-	var minorID: Int
+	var beaconName: String = ""
+	var majorID: Int = 0
+	var minorID: Int = 0
 	
 	var project: BroadcastProject?
 	

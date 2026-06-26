@@ -30,11 +30,11 @@ struct BroadcastItemView: View {
 						.font(.headline)
 					
 					HStack {
-						Text("Major: \(beacon.majorID)")
+						Text("Major: \(String(beacon.majorID))")
 							.font(.subheadline)
 							.opacity(0.8)
 						
-						Text("Minor: \(beacon.minorID)")
+						Text("Minor: \(String(beacon.minorID))")
 							.font(.subheadline)
 							.opacity(0.8)
 					}

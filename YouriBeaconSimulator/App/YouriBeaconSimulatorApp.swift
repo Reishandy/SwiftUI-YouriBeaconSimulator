@@ -25,10 +25,10 @@ struct YouriBeaconSimulatorApp: App {
 				permissionService: permissionService,
 				beaconBroadcastService: beaconBroadcastService
 			)
-				.modelContainer(for: [BroadcastProject.self, BroadcastProject.self])
+			.modelContainer(for: [BroadcastProject.self, BroadcastBeacon.self])
 #if os(macOS)
-				.frame(minWidth: 700)
-				.frame(maxWidth: 1000)
+			.frame(minWidth: 700)
+			.frame(maxWidth: 1000)
 #endif
 		}
 #if os(macOS)

@@ -10,11 +10,11 @@ import SwiftData
 
 @Model
 class BroadcastProject: Identifiable {
-	var id: UUID
-	var timestamp: Date
+	var id: UUID = UUID()
+	var timestamp: Date = Date.now
 	
-	var name: String
-	var proximityUUID: String
+	var name: String = ""
+	var proximityUUID: String = ""
 	
 	@Relationship(deleteRule: .cascade, inverse: \BroadcastBeacon.project)
 	var beacons: [BroadcastBeacon]?
