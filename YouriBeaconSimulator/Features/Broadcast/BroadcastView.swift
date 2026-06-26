@@ -48,19 +48,22 @@ struct BroadcastView: View {
 						subtitle: "Please turn on Bluetooth from your Control Center or Settings to start broadcasting.",
 						actionText: nil
 					)
-					
-				} else if broadcastViewModel.projects.isEmpty {
-					EmptyStateView(
-						systemImage: "antenna.radiowaves.left.and.right.slash",
-						title: "No iBeacon here",
-						subtitle: "Add a new iBeacon first",
-						actionText: "Add iBeacon"
-					) {
-						broadcastViewModel.isAddSheetPresented = true
-					}
 				} else {
-					Group {
-						if broadcastViewModel.filteredProjectGroups.isEmpty {
+					ZStack {
+						listView
+						
+						if broadcastViewModel.projects.isEmpty {
+							EmptyStateView(
+								systemImage: "antenna.radiowaves.left.and.right.slash",
+								title: "No iBeacon here",
+								subtitle: "Add a new iBeacon first",
+								actionText: "Add iBeacon"
+							) {
+								broadcastViewModel.isAddSheetPresented = true
+							}
+							.frame(maxWidth: .infinity, maxHeight: .infinity)
+							.background(.background)
+						} else if broadcastViewModel.filteredProjectGroups.isEmpty {
 							EmptyStateView(
 								systemImage: "magnifyingglass",
 								title: "No results found",
@@ -69,8 +72,8 @@ struct BroadcastView: View {
 							) {
 								broadcastViewModel.searchTerm = ""
 							}
-						} else {
-							listView
+							.frame(maxWidth: .infinity, maxHeight: .infinity)
+							.background(.background)
 						}
 					}
 					.animation(.default, value: broadcastViewModel.searchTerm)
