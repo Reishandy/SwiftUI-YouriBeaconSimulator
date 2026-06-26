@@ -106,11 +106,7 @@ struct BroadcastItemView: View {
 			}
 			.tint(.orange)
 			
-			ShareLink(
-				item: beacon.shareString,
-				subject: Text(beacon.beaconName),
-				message: Text("iBeacon configuration for \(beacon.beaconName)")
-			) {
+			ShareLink(item: beacon.shareString) {
 				Label("Share", systemImage: "square.and.arrow.up")
 			}
 			.tint(.blue)

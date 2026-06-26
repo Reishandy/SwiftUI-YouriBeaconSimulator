@@ -28,13 +28,14 @@ class BroadcastBeacon: Identifiable, Equatable {
 	}
 	
 	var shareString: String {
-		"""
-		Beacon: \(beaconName)
-		Major: \(majorID)
-		Minor: \(minorID)
-		----------
-		UUID: \(project?.proximityUUID ?? "Unknown")
-		Project: \(project?.name ?? "Unknown")
-		"""
+		 """
+		 iBeacon configuration for \(beaconName)
+		 ------------------------------------
+		 Project: \(project?.name ?? "Unknown")
+		 UUID: \(project?.proximityUUID ?? "Unknown")
+		 Beacon: \(beaconName)
+		 Major: \(majorID)
+		 Minor: \(minorID)
+		 """
 	}
 }

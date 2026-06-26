@@ -42,7 +42,6 @@ struct BroadcastView: View {
 					}
 				} else if broadcastViewModel.bluetoothAuthorization == .allowedAlways &&
 							broadcastViewModel.bluetoothState == .poweredOff {
-					
 					EmptyStateView(
 						systemImage: "exclamationmark.triangle.fill",
 						title: "Bluetooth is Powered Off",
@@ -59,17 +58,34 @@ struct BroadcastView: View {
 					) {
 						broadcastViewModel.isAddSheetPresented = true
 					}
-				} else if broadcastViewModel.filteredProjectGroups.isEmpty {
-					EmptyStateView(
-						systemImage: "magnifyingglass",
-						title: "No results found",
-						subtitle: "Check the spelling or try a new search",
-						actionText: "Clear Search"
-					) {
-						broadcastViewModel.searchTerm = ""
-					}
 				} else {
-					listView
+					Group {
+						if broadcastViewModel.filteredProjectGroups.isEmpty {
+							EmptyStateView(
+								systemImage: "magnifyingglass",
+								title: "No results found",
+								subtitle: "Check the spelling or try a new search",
+								actionText: "Clear Search"
+							) {
+								broadcastViewModel.searchTerm = ""
+							}
+						} else {
+							listView
+						}
+					}
+					.animation(.default, value: broadcastViewModel.searchTerm)
+#if os(iOS)
+					.searchable(
+						text: $broadcastViewModel.searchTerm,
+						placement: .navigationBarDrawer(displayMode: .always),
+						prompt: "Search Project or Beacon..."
+					)
+#else
+					.searchable(
+						text: $broadcastViewModel.searchTerm,
+						prompt: "Search Project or Beacon..."
+					)
+#endif
 				}
 			}
 			.navigationTitle("Broadcast")
@@ -147,16 +163,12 @@ struct BroadcastView: View {
 			} message: { beacon in
 				Text("Are you sure you want to delete \(beacon.beaconName)?")
 			}
-			.task {
-				broadcastViewModel.fetchData()
-			}
 		}
 	}
 	
 	@ViewBuilder
 	private var listView: some View {
 		List {
-			// TODO: Fix macOS header gap
 			ForEach(broadcastViewModel.filteredProjectGroups) { group in
 				Section {
 					ForEach(group.beacons) { beacon in
@@ -189,19 +201,6 @@ struct BroadcastView: View {
 				.headerProminence(.increased)
 			}
 		}
-		.animation(.default, value: broadcastViewModel.searchTerm)
-#if os(iOS)
-		.searchable(
-			text: $broadcastViewModel.searchTerm,
-			placement: .navigationBarDrawer(displayMode: .always),
-			prompt: "Search Project or Beacon..."
-		)
-#else
-		.searchable(
-			text: $broadcastViewModel.searchTerm,
-			prompt: "Search Project or Beacon..."
-		)
-#endif
 	}
 }
 

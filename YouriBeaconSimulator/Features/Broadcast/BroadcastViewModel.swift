@@ -62,6 +62,9 @@ class BroadcastViewModel {
 	init(modelContext: ModelContext, permissionService: PermissionService) {
 		self.modelContext = modelContext
 		self.permissionService = permissionService
+		
+		print("fetching")
+		self.fetchData()
 	}
 	
 	func fetchData() {
