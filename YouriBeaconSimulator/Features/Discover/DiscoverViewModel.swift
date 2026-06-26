@@ -9,6 +9,7 @@ import Foundation
 import SwiftData
 import CoreBluetooth
 import CoreLocation
+import UserNotifications
 
 @Observable
 class DiscoverViewModel {
@@ -32,8 +33,22 @@ class DiscoverViewModel {
 	
 	var selectedProject: BroadcastProject? = nil
 	var proximityUUID: String = ""
-	var isBackgroundEnabled: Bool = false
-	var isNotificationPermissionGranted: Bool = false
+	
+	var isBackgroundEnabled: Bool {
+		get { preferenceService.isBackgroundNotificationEnabled }
+		set { preferenceService.isBackgroundNotificationEnabled = newValue }
+	}
+	
+	var isBackgroundReady: Bool {
+		permissionService.locationAuthorization == .authorizedAlways &&
+		(permissionService.notificationAuthorization == .authorized || permissionService.notificationAuthorization == .provisional)
+	}
+	
+	var hasDeniedBackgroundPermissions: Bool {
+		permissionService.locationAuthorization == .denied ||
+		permissionService.locationAuthorization == .restricted ||
+		permissionService.notificationAuthorization == .denied
+	}
 	
 	init(modelContext: ModelContext, preferenceService: PreferenceService, permissionService: PermissionService) {
 		self.modelContext = modelContext
@@ -62,17 +77,25 @@ class DiscoverViewModel {
 		}
 	}
 	
-	func requestBluetoothPermission() {
-		Task {
-			await permissionService.requestBluetoothPermission()
-		}
-	}
-	
 	func requestLocationPermission() {
 		Task {
 			await permissionService.requestLocationPermission()
 		}
 	}
+	
+#if os(iOS)
+	func requestBackgroundPermissions() {
+		Task {
+			if permissionService.notificationAuthorization == .notDetermined {
+				await permissionService.requestNotificationPermission()
+			}
+			
+			if permissionService.locationAuthorization == .authorizedWhenInUse {
+				permissionService.requestAlwaysLocationPermission()
+			}
+		}
+	}
+#endif
 	
 	func startDiscovery() {
 		if let uuid = UUID(uuidString: proximityUUID) {

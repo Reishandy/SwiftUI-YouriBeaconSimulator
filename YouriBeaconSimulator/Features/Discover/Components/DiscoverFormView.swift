@@ -11,12 +11,15 @@ import SwiftData
 struct DiscoverFormView: View {
 	@Binding var selectedProject: BroadcastProject?
 	@Binding var proximityUUID: String
+	
+#if os(iOS)
 	@Binding var isBackgroundEnabled: Bool
-	@Binding var isNotificationPermissionGranted: Bool
+	let isBackgroundReady: Bool
+	let hasDeniedPermissions: Bool
+	let onGrantPermissionClick: () -> Void
+#endif
 	
 	var availableProjects: [BroadcastProject]
-	
-	let onGrantPermissionClick: () -> Void
 	let onStartDiscoveryClick: () -> Void
 	
 	private var isUUIDValid: Bool {
@@ -44,7 +47,7 @@ struct DiscoverFormView: View {
 					
 					HStack {
 						TextField("Proximity UUID", text: $proximityUUID)
-							.opacity(selectedProject != nil ? 0.5 : 1)
+							.opacity(selectedProject != nil ? 0.4 : 1)
 							.disabled(selectedProject != nil)
 							.onChange(of: proximityUUID) { _, newValue in
 								if let matchedProject = availableProjects.first(where: { $0.proximityUUID.caseInsensitiveCompare(newValue) == .orderedSame }) {
@@ -72,11 +75,12 @@ struct DiscoverFormView: View {
 					Text("Enter a UUID or select an existing project to start discovering iBeacons. Your selection will be saved for next time.")
 				}
 				
+#if os(iOS)
 				Section {
-					if isNotificationPermissionGranted {
+					if isBackgroundReady {
 						Toggle("Background Notifications", isOn: $isBackgroundEnabled)
 					} else {
-						Button("Grant Permissions") {
+						Button(hasDeniedPermissions ? "Open Settings to Enable" : "Grant Permissions") {
 							withAnimation {
 								onGrantPermissionClick()
 							}
@@ -86,17 +90,16 @@ struct DiscoverFormView: View {
 				} footer: {
 					Text("This will trigger a notification whenever you enter or exit the range of a beacon with this UUID while the app is in the background or closed.")
 				}
+#endif
 				
-				Section {
-					Button(action: onStartDiscoveryClick) {
-						Text("Start Discovery")
-							.frame(maxWidth: .infinity)
-							.foregroundStyle(isUUIDValid ? .prominentButtonText : .gray)
-					}
-					.buttonStyle(.borderedProminent)
-					.disabled(!isUUIDValid)
-					.listRowBackground(Color.clear)
+				Button(action: onStartDiscoveryClick) {
+					Text("Start Discovery")
+						.frame(maxWidth: .infinity)
+						.foregroundStyle(isUUIDValid ? .prominentButtonText : .gray)
 				}
+				.buttonStyle(.borderedProminent)
+				.disabled(!isUUIDValid)
+				.listRowBackground(Color.clear)
 			}
 			.formStyle(.grouped)
 		}
@@ -108,18 +111,30 @@ struct DiscoverFormView: View {
 	@Previewable @State var selectedProject: BroadcastProject? = nil
 	@Previewable @State var proximityUUID: String = ""
 	@Previewable @State var isBackgroundEnabled: Bool = false
-	@Previewable @State var isNotificationPermissionGranted: Bool = false
 	
+#if os(iOS)
 	DiscoverFormView(
 		selectedProject: $selectedProject,
 		proximityUUID: $proximityUUID,
 		isBackgroundEnabled: $isBackgroundEnabled,
-		isNotificationPermissionGranted: $isNotificationPermissionGranted,
+		isBackgroundReady: false,
+		hasDeniedPermissions: false,
+		onGrantPermissionClick: {},
 		availableProjects: [
 			BroadcastProject(name: "Office Setup", proximityUUID: UUID().uuidString),
 			BroadcastProject(name: "Home Lab", proximityUUID: UUID().uuidString)
 		],
-		onGrantPermissionClick: { isNotificationPermissionGranted = true },
 		onStartDiscoveryClick: {}
 	)
+#else
+	DiscoverFormView(
+		selectedProject: $selectedProject,
+		proximityUUID: $proximityUUID,
+		availableProjects: [
+			BroadcastProject(name: "Office Setup", proximityUUID: UUID().uuidString),
+			BroadcastProject(name: "Home Lab", proximityUUID: UUID().uuidString)
+		],
+		onStartDiscoveryClick: {}
+	)
+#endif
 }

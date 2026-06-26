@@ -8,6 +8,7 @@
 import Foundation
 import CoreLocation
 import CoreBluetooth
+import UserNotifications
 import Observation
 
 @Observable
@@ -16,6 +17,7 @@ public class PermissionService: NSObject {
 	public private(set) var bluetoothAuthorization: CBManagerAuthorization = .notDetermined
 	public private(set) var bluetoothState: CBManagerState = .unknown
 	public private(set) var locationAuthorization: CLAuthorizationStatus = .notDetermined
+	public private(set) var notificationAuthorization: UNAuthorizationStatus = .notDetermined
 	
 	var locationManager: CLLocationManager?
 	var peripheralManager: CBPeripheralManager?
@@ -32,6 +34,10 @@ public class PermissionService: NSObject {
 			self.peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: [
 				CBPeripheralManagerOptionShowPowerAlertKey: false
 			])
+		}
+		
+		Task {
+			await checkNotificationPermission()
 		}
 	}
 	
@@ -69,6 +75,27 @@ public class PermissionService: NSObject {
 		return await withCheckedContinuation { continuation in
 			self.locationContinuation = continuation
 			manager.requestWhenInUseAuthorization()
+		}
+	}
+	
+	public func requestAlwaysLocationPermission() {
+		let manager = CLLocationManager()
+		self.locationManager = manager
+		manager.delegate = self
+		manager.requestAlwaysAuthorization()
+	}
+	
+	public func checkNotificationPermission() async {
+		let settings = await UNUserNotificationCenter.current().notificationSettings()
+		self.notificationAuthorization = settings.authorizationStatus
+	}
+	
+	public func requestNotificationPermission() async {
+		do {
+			_ = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
+			await checkNotificationPermission()
+		} catch {
+			print("Failed to request notification permission: \(error)")
 		}
 	}
 }

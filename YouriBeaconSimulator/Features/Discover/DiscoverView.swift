@@ -14,6 +14,8 @@ struct DiscoverView: View {
 	
 	// TODO: Debug
 	@State private var selectedItem: String?
+	// TODO: Fix form bg toggle only request the notification
+	// TODO: Fix open settings to enable for notification does not update when u enable in setting and go back to the app
 	
 	var body: some View {
 		NavigationSplitView {
@@ -46,28 +48,50 @@ struct DiscoverView: View {
 						if discoverViewModel.isDiscovering {
 							listView
 						} else {
+#if os(iOS)
 							DiscoverFormView(
 								selectedProject: $discoverViewModel.selectedProject,
 								proximityUUID: $discoverViewModel.proximityUUID,
-								isBackgroundEnabled: $discoverViewModel.isBackgroundEnabled,
-								isNotificationPermissionGranted: $discoverViewModel.isNotificationPermissionGranted,
-								availableProjects: discoverViewModel.projects,
+								isBackgroundEnabled: Binding(
+									get: { discoverViewModel.isBackgroundEnabled },
+									set: { discoverViewModel.isBackgroundEnabled = $0 }
+								),
+								isBackgroundReady: discoverViewModel.isBackgroundReady,
+								hasDeniedPermissions: discoverViewModel.hasDeniedBackgroundPermissions,
 								onGrantPermissionClick: {
-									// TODO: Actual notification permission request
-									discoverViewModel.isNotificationPermissionGranted = true
+									if discoverViewModel.hasDeniedBackgroundPermissions {
+										if let url = URL(string: UIApplication.openSettingsURLString) {
+											UIApplication.shared.open(url)
+										}
+									} else {
+										discoverViewModel.requestBackgroundPermissions()
+									}
 								},
+								availableProjects: discoverViewModel.projects,
 								onStartDiscoveryClick: {
 									withAnimation {
 										discoverViewModel.startDiscovery()
 									}
 								}
 							)
+#else
+							DiscoverFormView(
+								selectedProject: $discoverViewModel.selectedProject,
+								proximityUUID: $discoverViewModel.proximityUUID,
+								availableProjects: discoverViewModel.projects,
+								onStartDiscoveryClick: {
+									withAnimation {
+										discoverViewModel.startDiscovery()
+									}
+								}
+							)
+#endif
 						}
 					}
 				}
 			}
 			.navigationTitle("Discover")
-			.navigationSplitViewColumnWidth(min: 300, ideal: 400, max: 500)
+			.navigationSplitViewColumnWidth(min: 300, ideal: 300, max: 500)
 			.toolbar {
 				if discoverViewModel.isDiscovering {
 					ToolbarItem(placement: .primaryAction) {

@@ -11,6 +11,7 @@ import SwiftUI
 final class PreferenceService {
 	private enum Keys {
 		static let selectedUUID = "selectedUUID"
+		static let isBackgroundNotificationEnabled = "isBackgroundNotificationEnabled"
 	}
 	
 	var selectedUUID: UUID? {
@@ -23,6 +24,12 @@ final class PreferenceService {
 		}
 	}
 	
+	var isBackgroundNotificationEnabled: Bool {
+		didSet {
+			UserDefaults.standard.set(isBackgroundNotificationEnabled, forKey: Keys.isBackgroundNotificationEnabled)
+		}
+	}
+	
 	init() {
 		if let uuidString = UserDefaults.standard.string(forKey: Keys.selectedUUID),
 		   let savedUUID = UUID(uuidString: uuidString) {
@@ -30,5 +37,7 @@ final class PreferenceService {
 		} else {
 			self.selectedUUID = nil
 		}
+		
+		self.isBackgroundNotificationEnabled = UserDefaults.standard.bool(forKey: Keys.isBackgroundNotificationEnabled)
 	}
 }
