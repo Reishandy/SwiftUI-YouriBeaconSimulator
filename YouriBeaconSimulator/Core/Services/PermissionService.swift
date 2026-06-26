@@ -10,7 +10,9 @@ import CoreLocation
 import CoreBluetooth
 import UserNotifications
 import Observation
+#if os(iOS)
 import UIKit
+#endif
 
 @Observable
 @MainActor

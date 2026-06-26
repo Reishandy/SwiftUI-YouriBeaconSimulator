@@ -44,7 +44,21 @@ struct DiscoverView: View {
 				} else {
 					ZStack {
 						if discoverViewModel.isDiscovering {
-							listView
+							// TODO: Empty state with animation icon and stop button
+							if true {
+								EmptyStateView(
+									systemImage: "dot.radiowaves.up.forward",
+									title: "Discovering",
+									subtitle: "No nearby iBeacon has been discovered yet.",
+									actionText: "Stop Discovering"
+								) {
+									withAnimation {
+										discoverViewModel.stopDiscovery()
+									}
+								}
+							} else {
+								listView
+							}
 						} else {
 #if os(iOS)
 							DiscoverFormView(
@@ -94,11 +108,21 @@ struct DiscoverView: View {
 			.toolbar {
 				if discoverViewModel.isDiscovering {
 					ToolbarItem(placement: .primaryAction) {
-						Button("Stop") {
-							withAnimation {
-								discoverViewModel.stopDiscovery()
+						HStack {
+							Button("Stop") {
+								withAnimation {
+									discoverViewModel.stopDiscovery()
+								}
 							}
+							
+							Image(systemName: "dot.radiowaves.up.forward")
+								.symbolEffect(
+									.variableColor.iterative.dimInactiveLayers.nonReversing,
+									options: .repeat(.periodic(delay: 0.3))
+								)
+								.padding(.leading, -10)
 						}
+						.padding(.trailing, 6)
 					}
 				}
 			}
@@ -117,7 +141,6 @@ struct DiscoverView: View {
 	private var listView: some View {
 		// TODO: Haptic when new entry comes in
 		// TODO: Item list
-		// TODO: Empty state with animation icon and stop button
 		List(1...99, id: \.self, selection: $selectedItem) { item in
 			NavigationLink("Item \(item)", value: "Item \(item)")
 		}

@@ -44,12 +44,14 @@ class DiscoverViewModel {
 		(permissionService.notificationAuthorization == .authorized || permissionService.notificationAuthorization == .provisional)
 	}
 	
+#if os(iOS)
 	var hasDeniedBackgroundPermissions: Bool {
 		permissionService.locationAuthorization == .denied ||
 		permissionService.locationAuthorization == .restricted ||
 		permissionService.locationAuthorization == .authorizedWhenInUse ||
 		permissionService.notificationAuthorization == .denied
 	}
+#endif
 	
 	init(modelContext: ModelContext, preferenceService: PreferenceService, permissionService: PermissionService) {
 		self.modelContext = modelContext
