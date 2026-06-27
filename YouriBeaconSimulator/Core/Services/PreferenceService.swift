@@ -2,8 +2,6 @@
 //  PreferenceService.swift
 //  YouriBeaconSimulator
 //
-//  Created by Muhammad Akbar Reishandy on 26/06/26.
-//
 
 import SwiftUI
 
@@ -12,6 +10,7 @@ final class PreferenceService {
 	private enum Keys {
 		static let selectedUUID = "selectedUUID"
 		static let isBackgroundNotificationEnabled = "isBackgroundNotificationEnabled"
+		static let hasRequestedAlwaysLocation = "hasRequestedAlwaysLocation"
 	}
 	
 	var selectedUUID: UUID? {
@@ -30,7 +29,11 @@ final class PreferenceService {
 		}
 	}
 	
-	// TODO: Track if the user changed the permission loction from always to other
+	var hasRequestedAlwaysLocation: Bool {
+		didSet {
+			UserDefaults.standard.set(hasRequestedAlwaysLocation, forKey: Keys.hasRequestedAlwaysLocation)
+		}
+	}
 	
 	init() {
 		if let uuidString = UserDefaults.standard.string(forKey: Keys.selectedUUID),
@@ -41,5 +44,6 @@ final class PreferenceService {
 		}
 		
 		self.isBackgroundNotificationEnabled = UserDefaults.standard.bool(forKey: Keys.isBackgroundNotificationEnabled)
+		self.hasRequestedAlwaysLocation = UserDefaults.standard.bool(forKey: Keys.hasRequestedAlwaysLocation)
 	}
 }

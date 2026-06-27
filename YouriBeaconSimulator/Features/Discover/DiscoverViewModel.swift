@@ -76,9 +76,17 @@ class DiscoverViewModel {
 	
 #if os(iOS)
 	var hasDeniedBackgroundPermissions: Bool {
-		permissionService.locationAuthorization == .denied ||
-		permissionService.locationAuthorization == .restricted ||
-		permissionService.notificationAuthorization == .denied
+		if permissionService.locationAuthorization == .denied ||
+			permissionService.locationAuthorization == .restricted ||
+			permissionService.notificationAuthorization == .denied {
+			return true
+		}
+		
+		if preferenceService.hasRequestedAlwaysLocation && permissionService.locationAuthorization == .authorizedWhenInUse {
+			return true
+		}
+		
+		return false
 	}
 #endif
 	
@@ -134,10 +142,11 @@ class DiscoverViewModel {
 	func requestBackgroundPermissions() {
 		Task {
 			if permissionService.locationAuthorization == .notDetermined {
-				await permissionService.requestLocationPermission()
+				let _ = await permissionService.requestLocationPermission()
 			}
 			
 			if permissionService.locationAuthorization == .authorizedWhenInUse {
+				preferenceService.hasRequestedAlwaysLocation = true
 				permissionService.requestAlwaysLocationPermission()
 			}
 			

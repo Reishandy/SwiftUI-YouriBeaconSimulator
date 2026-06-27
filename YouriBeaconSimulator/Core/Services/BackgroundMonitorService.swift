@@ -12,6 +12,7 @@ import Observation
 @Observable
 class BackgroundMonitorService: NSObject, CLLocationManagerDelegate {
 	// TODO: Fix cold launch
+	// TODO: Bug the location badge on the dynamic island not gone when force close or uninsalled
 #if os(iOS)
 	private var monitor: CLMonitor?
 	private var backgroundActivitySession: CLBackgroundActivitySession?
@@ -55,7 +56,7 @@ class BackgroundMonitorService: NSObject, CLLocationManagerDelegate {
 			}
 		}
 		
-		backgroundLocationManager.showsBackgroundLocationIndicator = true
+		backgroundLocationManager.showsBackgroundLocationIndicator = false
 	}
 	
 	private func handleEvent(_ event: CLMonitor.Event) async {
@@ -109,7 +110,7 @@ class BackgroundMonitorService: NSObject, CLLocationManagerDelegate {
 				let constraint = CLBeaconIdentityConstraint(uuid: uuid)
 				self.backgroundLocationManager.startRangingBeacons(satisfying: constraint)
 				
-				DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+				DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
 					self.backgroundLocationManager.stopRangingBeacons(satisfying: constraint)
 					let beaconsToReturn = self.discoveredBackgroundBeacons
 					self.isRanging = false
