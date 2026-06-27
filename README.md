@@ -23,17 +23,17 @@ Your iBeacon Simulator eliminates the need for physical beacon hardware when tes
 ### iOS & iPadOS Previews
 
 <div align="center">
-  <img src="images/ios-1.png" width="22%" alt="iOS Discovery View">
-  <img src="images/ios-2.png" width="22%" alt="iOS Beacon Details">
-  <img src="images/ios-3.png" width="22%" alt="iOS Broadcast Setup">
-  <img src="images/ios-4.png" width="22%" alt="iOS Project Management">
+  <img src="images/ios-1.png" width="22%" alt="iOS Broadcast">
+  <img src="images/ios-2.png" width="22%" alt="iOS Project Management">
+  <img src="images/ios-3.png" width="22%" alt="iOS Discovery">
+  <img src="images/ios-4.png" width="22%" alt="iOS Beacon Detail">
 </div>
 
 ### macOS Previews
 
 <div align="center">
-  <img src="images/mac-1.png" width="45%" alt="macOS Split View">
-  <img src="images/mac-2.png" width="45%" alt="macOS Configuration">
+  <img src="images/mac-1.png" width="45%" alt="macOS Broadcast">
+  <img src="images/mac-2.png" width="45%" alt="macOS Discovery">
 </div>
 
 ## Key Features
