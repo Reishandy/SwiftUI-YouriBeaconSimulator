@@ -87,7 +87,9 @@ class BeaconDiscoveryService: NSObject {
 			var hasChanges = false
 			let now = Date.now
 			
-			// 1. Mark beacons stale if unheard from for 1 second
+			// 1 Second stale treshold, why?
+			// Because macOS polling interval is higher so this is safe number
+			// While iOS relies on CL and it goes thru it's own timeout phase with Unknwon then our phase and this will help make it faster
 			for i in 0..<self.discoveredBeacons.count {
 				if self.discoveredBeacons[i].isCurrentlyActive &&
 					now.timeIntervalSince(self.discoveredBeacons[i].lastSeen) >= 1.0 {
@@ -97,7 +99,6 @@ class BeaconDiscoveryService: NSObject {
 				}
 			}
 			
-			// 2. Push inactive beacons to the bottom of the list
 			if hasChanges {
 				self.discoveredBeacons.sort {
 					if $0.isCurrentlyActive != $1.isCurrentlyActive {
@@ -184,7 +185,25 @@ extension BeaconDiscoveryService: CBCentralManagerDelegate {
 		let minor = UInt16(manufacturerData[22]) << 8 | UInt16(manufacturerData[23])
 		let txPower = Int8(bitPattern: manufacturerData[24])
 		
-		let newBeacon = DiscoveredBeacon(uuid: beaconUUID, major: major, minor: minor, rssi: RSSI.intValue, txPower: txPower)
+		// Smoothing Algorithm (Low-Pass Filter)
+		let beaconID = "\(beaconUUID.uuidString)-\(major)-\(minor)"
+		var finalRSSI = RSSI.intValue
+		
+		if let index = discoveredBeacons.firstIndex(where: { $0.id == beaconID }) {
+			let previousBeacon = discoveredBeacons[index]
+			
+			// Only apply smoothing if it hasn't gone completely stale.
+			if previousBeacon.isCurrentlyActive {
+				// 'alpha' determines the smoothness.
+				// 1.0 = No smoothing (raw data).
+				// 0.1 = Very smooth, but takes a moment to catch up to sudden movements.
+				let alpha = 0.1
+				let smoothed = (Double(RSSI.intValue) * alpha) + (Double(previousBeacon.rssi) * (1.0 - alpha))
+				finalRSSI = Int(round(smoothed))
+			}
+		}
+		
+		let newBeacon = DiscoveredBeacon(uuid: beaconUUID, major: major, minor: minor, rssi: finalRSSI, txPower: txPower)
 		
 		if let index = discoveredBeacons.firstIndex(where: { $0.id == newBeacon.id }) {
 			discoveredBeacons[index] = newBeacon
