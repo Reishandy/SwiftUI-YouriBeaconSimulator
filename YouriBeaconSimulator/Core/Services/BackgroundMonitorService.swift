@@ -47,14 +47,18 @@ class BackgroundMonitorService: NSObject, CLLocationManagerDelegate {
 		guard let activeMonitor = monitor else { return }
 		
 		Task {
-			do {
-				for try await event in await activeMonitor.events {
-					await handleEvent(event)
+			while !Task.isCancelled {
+				do {
+					for try await event in await activeMonitor.events {
+						await handleEvent(event)
+					}
+				} catch {
+					try? await Task.sleep(for: .seconds(3))
 				}
-			} catch {
-				print("Background monitor stream error: \(error)")
 			}
 		}
+		
+		backgroundLocationManager.showsBackgroundLocationIndicator = true
 	}
 	
 	private func handleEvent(_ event: CLMonitor.Event) async {
@@ -62,14 +66,14 @@ class BackgroundMonitorService: NSObject, CLLocationManagerDelegate {
 		
 		switch event.state {
 		case .satisfied:
+			NotificationUtilities.send(
+				title: "Beacon Region Entered",
+				body: "You entered the region for \(uuid.uuidString)."
+			)
+			
 			let beacons = await performBackgroundRangingBurst(for: uuid)
 			
-			if beacons.isEmpty {
-				NotificationUtilities.send(
-					title: "Beacon Region Entered",
-					body: "You entered the region for \(uuid.uuidString), but couldn't range specific beacons in time."
-				)
-			} else {
+			if !beacons.isEmpty {
 				var bodyText = "Found \(beacons.count) beacons nearby:\n"
 				for beacon in beacons {
 					let distance = beacon.accuracy < 0 ? "Unknown" : String(format: "%.2fm", beacon.accuracy)
@@ -105,8 +109,8 @@ class BackgroundMonitorService: NSObject, CLLocationManagerDelegate {
 				let constraint = CLBeaconIdentityConstraint(uuid: uuid)
 				self.backgroundLocationManager.startRangingBeacons(satisfying: constraint)
 				
-				// 3-second burst
-				DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+				// 7-second burst
+				DispatchQueue.main.asyncAfter(deadline: .now() + 7.0) {
 					self.backgroundLocationManager.stopRangingBeacons(satisfying: constraint)
 					
 					let beaconsToReturn = self.discoveredBackgroundBeacons
@@ -143,18 +147,27 @@ class BackgroundMonitorService: NSObject, CLLocationManagerDelegate {
 			await setupMonitorAndListen()
 			
 			guard let monitor = monitor else { return }
-			let identifier = uuid.uuidString
+			
+			let targetIdentifier = uuid.uuidString
+			let currentIdentifiers = await monitor.identifiers
 			
 			if isEnabled {
-				let currentIdentifiers = await monitor.identifiers
-				for existingID in currentIdentifiers {
+				for existingID in currentIdentifiers where existingID != targetIdentifier {
 					await monitor.remove(existingID)
+					print("removing \(existingID)")
 				}
 				
-				let condition = CLMonitor.BeaconIdentityCondition(uuid: uuid)
-				await monitor.add(condition, identifier: identifier, assuming: .unknown)
+				if !currentIdentifiers.contains(targetIdentifier) {
+					let condition = CLMonitor.BeaconIdentityCondition(uuid: uuid)
+					await monitor.add(condition, identifier: targetIdentifier, assuming: .unknown)
+					print("adding \(targetIdentifier)")
+				}
+				
 			} else {
-				await monitor.remove(identifier)
+				for existingID in currentIdentifiers {
+					await monitor.remove(existingID)
+					print("removing \(existingID)")
+				}
 			}
 		}
 	}
