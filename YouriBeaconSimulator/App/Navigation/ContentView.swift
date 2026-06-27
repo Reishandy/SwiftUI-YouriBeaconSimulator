@@ -51,7 +51,7 @@ struct ContentView: View {
 		preferenceService: PreferenceService(),
 		permissionService: permissionService,
 		beaconBroadcastService: BeaconBroadcastService(permissionService: permissionService),
-		backgroundMonitorService: BackgroundMonitorService()
+		backgroundMonitorService: BackgroundMonitorService.shared
 	)
 	.modelContainer(PreviewContainer.shared)
 }

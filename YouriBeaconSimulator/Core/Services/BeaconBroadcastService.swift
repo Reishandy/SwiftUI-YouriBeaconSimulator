@@ -10,7 +10,6 @@ import CoreBluetooth
 import CoreLocation
 import Observation
 
-// TODO: Logging
 @Observable
 class BeaconBroadcastService {
 	private let permissionService: PermissionService

@@ -12,10 +12,13 @@ import SwiftData
 struct YouriBeaconSimulatorApp: App {
 	@Environment(\.scenePhase) private var scenePhase
 	
+#if os(iOS)
+	@UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+#endif
+	
 	@State var preferenceService: PreferenceService
 	@State var permissionService: PermissionService
 	@State var beaconBroadcastService: BeaconBroadcastService
-	@State var backgroundMonitorService: BackgroundMonitorService
 	
 	init() {
 		let permissionService = PermissionService()
@@ -23,7 +26,6 @@ struct YouriBeaconSimulatorApp: App {
 		self._preferenceService = State(initialValue: PreferenceService())
 		self._permissionService = State(initialValue: permissionService)
 		self._beaconBroadcastService = State(initialValue: BeaconBroadcastService(permissionService: permissionService))
-		self._backgroundMonitorService = State(initialValue: BackgroundMonitorService())
 	}
 	
 	var body: some Scene {
@@ -32,7 +34,7 @@ struct YouriBeaconSimulatorApp: App {
 				preferenceService: preferenceService,
 				permissionService: permissionService,
 				beaconBroadcastService: beaconBroadcastService,
-				backgroundMonitorService: backgroundMonitorService
+				backgroundMonitorService: BackgroundMonitorService.shared
 			)
 			.modelContainer(for: [BroadcastProject.self, BroadcastBeacon.self])
 #if os(macOS)
