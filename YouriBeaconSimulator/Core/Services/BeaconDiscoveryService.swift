@@ -100,12 +100,7 @@ class BeaconDiscoveryService: NSObject {
 			}
 			
 			if hasChanges {
-				self.discoveredBeacons.sort {
-					if $0.isCurrentlyActive != $1.isCurrentlyActive {
-						return $0.isCurrentlyActive && !$1.isCurrentlyActive
-					}
-					return $0.accuracy < $1.accuracy
-				}
+				self.sortDiscoveredBeacons()
 			}
 		}
 	}
@@ -115,6 +110,23 @@ class BeaconDiscoveryService: NSObject {
 		centralManager?.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
 	}
 #endif
+	
+	private func sortDiscoveredBeacons() {
+		self.discoveredBeacons.sort {
+			// Sort by Active Status (Active first)
+			if $0.isCurrentlyActive != $1.isCurrentlyActive {
+				return $0.isCurrentlyActive && !$1.isCurrentlyActive
+			}
+			
+			// Group by UUID
+			if $0.uuid != $1.uuid {
+				return $0.uuid.uuidString < $1.uuid.uuidString
+			}
+			
+			// Sort by Accuracy (Closest first)
+			return $0.accuracy < $1.accuracy
+		}
+	}
 }
 
 #if os(iOS)
@@ -150,12 +162,7 @@ extension BeaconDiscoveryService: CLLocationManagerDelegate {
 			}
 		}
 		
-		self.discoveredBeacons.sort {
-			if $0.isCurrentlyActive != $1.isCurrentlyActive {
-				return $0.isCurrentlyActive && !$1.isCurrentlyActive
-			}
-			return $0.accuracy < $1.accuracy
-		}
+		self.sortDiscoveredBeacons()
 	}
 }
 #endif
@@ -178,8 +185,6 @@ extension BeaconDiscoveryService: CBCentralManagerDelegate {
 		var uuidBytes = [UInt8](repeating: 0, count: 16)
 		manufacturerData.copyBytes(to: &uuidBytes, from: 4..<20)
 		let beaconUUID = NSUUID(uuidBytes: uuidBytes) as UUID
-		
-		guard beaconUUID == targetUUID else { return }
 		
 		let major = UInt16(manufacturerData[20]) << 8 | UInt16(manufacturerData[21])
 		let minor = UInt16(manufacturerData[22]) << 8 | UInt16(manufacturerData[23])
@@ -212,12 +217,7 @@ extension BeaconDiscoveryService: CBCentralManagerDelegate {
 			self.onNewBeaconFound?()
 		}
 		
-		discoveredBeacons.sort {
-			if $0.isCurrentlyActive != $1.isCurrentlyActive {
-				return $0.isCurrentlyActive && !$1.isCurrentlyActive
-			}
-			return $0.accuracy < $1.accuracy
-		}
+		self.sortDiscoveredBeacons()
 	}
 }
 #endif

@@ -27,6 +27,14 @@ class DiscoverViewModel {
 	var discoveredBeacons: [DiscoveredBeacon] {
 		previewBeacons ?? discoveryService.discoveredBeacons
 	}
+	var targetBeacons: [DiscoveredBeacon] {
+		let target = UUID(uuidString: proximityUUID)
+		return discoveredBeacons.filter { $0.uuid == target }
+	}
+	var otherBeacons: [DiscoveredBeacon] {
+		let target = UUID(uuidString: proximityUUID)
+		return discoveredBeacons.filter { $0.uuid != target }
+	}
 	
 	var bluetoothAuthorization: CBManagerAuthorization {
 		permissionService.bluetoothAuthorization

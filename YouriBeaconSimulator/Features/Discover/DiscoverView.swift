@@ -171,9 +171,25 @@ struct DiscoverView: View {
 	
 	@ViewBuilder
 	private var listView: some View {
-		List(discoverViewModel.discoveredBeacons, selection: $discoverViewModel.selectedBeaconID) { beacon in
-			NavigationLink(value: beacon.id) {
-				DiscoverItemView(discoveredBeacon: beacon)
+		List(selection: $discoverViewModel.selectedBeaconID) {
+			if !discoverViewModel.targetBeacons.isEmpty {
+				Section {
+					ForEach(discoverViewModel.targetBeacons) { beacon in
+						NavigationLink(value: beacon.id) {
+							DiscoverItemView(discoveredBeacon: beacon)
+						}
+					}
+				}
+			}
+			
+			if !discoverViewModel.otherBeacons.isEmpty {
+				Section("Other Discovered iBeacons") {
+					ForEach(discoverViewModel.otherBeacons) { beacon in
+						NavigationLink(value: beacon.id) {
+							DiscoverItemView(discoveredBeacon: beacon)
+						}
+					}
+				}
 			}
 		}
 	}
