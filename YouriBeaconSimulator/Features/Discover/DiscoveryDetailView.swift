@@ -34,10 +34,19 @@ struct DiscoveryDetailView: View {
 			}
 			
 			Section("Status") {
-				detailRow(
-					title: "Last Seen",
-					value: discoveredBeacon.lastSeen.formatted(date: .abbreviated, time: .standard)
-				)
+				HStack {
+					Text("Last Seen")
+						.foregroundStyle(.primary)
+					
+					Spacer(minLength: 16)
+					
+					TimelineView(.periodic(from: .now, by: 1)) { context in
+						Text(Self.timeFormatter.localizedString(for: discoveredBeacon.lastSeen, relativeTo: context.date))
+							.foregroundStyle(.secondary)
+							.multilineTextAlignment(.trailing)
+							.font(.body.monospacedDigit())
+					}
+				}
 			}
 		}
 		.formStyle(.grouped)
@@ -102,6 +111,12 @@ struct DiscoveryDetailView: View {
 			}
 		}
 	}
+	
+	private static let timeFormatter: RelativeDateTimeFormatter = {
+		let formatter = RelativeDateTimeFormatter()
+		formatter.unitsStyle = .full
+		return formatter
+	}()
 }
 
 #Preview {
