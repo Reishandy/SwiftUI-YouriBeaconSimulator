@@ -19,6 +19,7 @@ class BackgroundMonitorService: NSObject, CLLocationManagerDelegate {
 	
 	private var backgroundLocationManager: CLLocationManager = CLLocationManager()
 	private var discoveredBackgroundBeacons: [CLBeacon] = []
+	private var lastKnownState: [UUID: CLMonitor.Event.State] = [:]
 	
 	private var isRanging = false
 	private var rangingContinuation: CheckedContinuation<[CLBeacon], Never>?
@@ -60,9 +61,14 @@ class BackgroundMonitorService: NSObject, CLLocationManagerDelegate {
 	private func handleEvent(_ event: CLMonitor.Event) async {
 		guard let uuid = UUID(uuidString: event.identifier) else { return }
 		
+		if lastKnownState[uuid] == event.state {
+			return
+		}
+		
+		lastKnownState[uuid] = event.state
+		
 		switch event.state {
 		case .satisfied:
-			// TODO: This triggers twice
 			NotificationUtilities.send(
 				title: "Beacon Region Entered",
 				body: "You entered the region for \(uuid.uuidString)."
@@ -82,7 +88,6 @@ class BackgroundMonitorService: NSObject, CLLocationManagerDelegate {
 			}
 			
 		case .unsatisfied:
-			// TODO: This triggers twice
 			NotificationUtilities.send(
 				title: "Beacon Lost",
 				body: "You left the range of \(uuid.uuidString)"
@@ -104,7 +109,7 @@ class BackgroundMonitorService: NSObject, CLLocationManagerDelegate {
 				let constraint = CLBeaconIdentityConstraint(uuid: uuid)
 				self.backgroundLocationManager.startRangingBeacons(satisfying: constraint)
 				
-				DispatchQueue.main.asyncAfter(deadline: .now() + 7.0) {
+				DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
 					self.backgroundLocationManager.stopRangingBeacons(satisfying: constraint)
 					let beaconsToReturn = self.discoveredBackgroundBeacons
 					self.isRanging = false
