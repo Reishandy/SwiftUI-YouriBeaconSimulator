@@ -5,11 +5,6 @@
 //  Created by Muhammad Akbar Reishandy on 27/06/26.
 //
 
-//
-//  BackgroundMonitorService.swift
-//  YouriBeaconSimulator
-//
-
 import Foundation
 import CoreLocation
 import Observation
@@ -18,14 +13,21 @@ import Observation
 class BackgroundMonitorService: NSObject, CLLocationManagerDelegate {
 #if os(iOS)
 	private var monitor: CLMonitor?
-	private var backgroundLocationManager: CLLocationManager?
+	
+	private var backgroundLocationManager: CLLocationManager = CLLocationManager()
 	private var discoveredBackgroundBeacons: [CLBeacon] = []
+	
+	private var isRanging = false
+	private var rangingContinuation: CheckedContinuation<[CLBeacon], Never>?
 #endif
 	
 	override init() {
 		super.init()
 		
 #if os(iOS)
+		backgroundLocationManager.delegate = self
+		backgroundLocationManager.allowsBackgroundLocationUpdates = true
+		
 		Task {
 			await setupMonitorAndListen()
 		}
@@ -42,14 +44,16 @@ class BackgroundMonitorService: NSObject, CLLocationManagerDelegate {
 		}
 		
 		monitor = await CLMonitor("BeaconBackgroundMonitor")
-		guard let monitor = monitor else { return }
+		guard let activeMonitor = monitor else { return }
 		
-		do {
-			for try await event in await monitor.events {
-				await handleEvent(event)
+		Task {
+			do {
+				for try await event in await activeMonitor.events {
+					await handleEvent(event)
+				}
+			} catch {
+				print("Background monitor stream error: \(error)")
 			}
-		} catch {
-			return
 		}
 	}
 	
@@ -90,30 +94,47 @@ class BackgroundMonitorService: NSObject, CLLocationManagerDelegate {
 	}
 	
 	private func performBackgroundRangingBurst(for uuid: UUID) async -> [CLBeacon] {
+		guard !isRanging else { return [] }
+		isRanging = true
 		discoveredBackgroundBeacons = []
 		
 		return await withCheckedContinuation { continuation in
+			self.rangingContinuation = continuation
+			
 			DispatchQueue.main.async {
-				self.backgroundLocationManager = CLLocationManager()
-				self.backgroundLocationManager?.delegate = self
-				
 				let constraint = CLBeaconIdentityConstraint(uuid: uuid)
-				self.backgroundLocationManager?.startRangingBeacons(satisfying: constraint)
+				self.backgroundLocationManager.startRangingBeacons(satisfying: constraint)
 				
+				// 3-second burst
 				DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-					self.backgroundLocationManager?.stopRangingBeacons(satisfying: constraint)
-					self.backgroundLocationManager?.delegate = nil
-					self.backgroundLocationManager = nil
+					self.backgroundLocationManager.stopRangingBeacons(satisfying: constraint)
 					
-					continuation.resume(returning: self.discoveredBackgroundBeacons)
+					let beaconsToReturn = self.discoveredBackgroundBeacons
+					self.isRanging = false
+					
+					if let cont = self.rangingContinuation {
+						self.rangingContinuation = nil
+						cont.resume(returning: beaconsToReturn)
+					}
 				}
 			}
 		}
 	}
 	
 	func locationManager(_ manager: CLLocationManager, didRange beacons: [CLBeacon], satisfying beaconConstraint: CLBeaconIdentityConstraint) {
-		if !beacons.isEmpty {
-			self.discoveredBackgroundBeacons = beacons
+		var uniqueBeacons: [CLBeacon] = []
+		var seenIds: Set<String> = []
+		
+		for beacon in beacons {
+			let id = "\(beacon.major)-\(beacon.minor)"
+			if !seenIds.contains(id) {
+				seenIds.insert(id)
+				uniqueBeacons.append(beacon)
+			}
+		}
+		
+		if !uniqueBeacons.isEmpty {
+			self.discoveredBackgroundBeacons = uniqueBeacons
 		}
 	}
 	
