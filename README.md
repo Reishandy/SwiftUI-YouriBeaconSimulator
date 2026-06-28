@@ -20,7 +20,7 @@
 
 Your iBeacon Simulator eliminates the need for physical beacon hardware when testing location-based applications, indoor navigation, or proximity marketing triggers. Built entirely in modern Swift, it leverages device capabilities to turn your iPhone, iPad, or Mac into a fully functioning, configurable iBeacon, while also acting as a highly accurate scanner for existing beacons in your environment.
 
-### iOS & iPadOS Previews
+### iOS Previews
 
 <div align="center">
   <img src="images/ios-1.PNG" width="22%" alt="iOS Broadcast">
