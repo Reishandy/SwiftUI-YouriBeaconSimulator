@@ -176,6 +176,9 @@ struct BroadcastView: View {
 			} message: { beacon in
 				Text("Are you sure you want to delete \(beacon.beaconName)?")
 			}
+			.onChange(of: broadcastViewModel.bluetoothAuthorization == .allowedAlways) {
+				broadcastViewModel.fetchData()
+			}
 		}
 	}
 	
