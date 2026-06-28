@@ -41,7 +41,6 @@ class BroadcastViewModel {
 	var bluetoothState: CBManagerState { bluetoothManager.state }
 	var currentBroadcastingBeacon: BroadcastBeacon? { broadcastService.activeBeacon }
 	
-	// TODO: Tidy this up
 	var selectedBeacon: BroadcastBeacon?
 	var searchTerm: String = ""
 	
