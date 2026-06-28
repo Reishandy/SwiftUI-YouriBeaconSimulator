@@ -167,6 +167,9 @@ struct DiscoverView: View {
 #endif
 			}
 		}
+		.onAppear {
+			discoverViewModel.fetchData()
+		}
 	}
 	
 	@ViewBuilder
