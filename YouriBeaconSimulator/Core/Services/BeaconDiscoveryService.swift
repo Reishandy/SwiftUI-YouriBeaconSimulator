@@ -40,7 +40,7 @@ class BeaconDiscoveryService: BeaconDiscovererDelegate {
 		self.discoveredBeacons = []
 		self.onNewBeaconFound = onNewBeaconFound
 		
-		Task { await logger?.log(message: "Started scanning for UUID: \(uuid.uuidString)", category: .discovery) }
+		Task { await logger?.log(message: "Started scanning for UUID:\n\(uuid.uuidString)", category: .discovery) }
 		
 		discoverer.startDiscovery(uuid: uuid)
 		startRefreshTask()
@@ -79,7 +79,7 @@ class BeaconDiscoveryService: BeaconDiscovererDelegate {
 						
 						let major = updatedBeacons[i].major
 						let minor = updatedBeacons[i].minor
-						Task { await self.logger?.log(message: "Beacon (Major: \(major), Minor: \(minor)) went out of range (stale).", category: .discovery) }
+						Task { await self.logger?.log(message: "Beacon (Major: \(major), Minor: \(minor))\nwent out of range (stale).", category: .discovery) }
 					}
 				}
 				
@@ -109,7 +109,7 @@ class BeaconDiscoveryService: BeaconDiscovererDelegate {
 		
 		if let index = updatedBeacons.firstIndex(where: { $0.id == incomingBeacon.id }) {
 			if !updatedBeacons[index].isCurrentlyActive {
-				Task { await logger?.log(message: "Beacon (Major: \(incomingBeacon.major), Minor: \(incomingBeacon.minor)) is back in range.", category: .discovery) }
+				Task { await logger?.log(message: "Beacon (Major: \(incomingBeacon.major), Minor: \(incomingBeacon.minor))\nis back in range.", category: .discovery) }
 			}
 			
 			updatedBeacons[index] = incomingBeacon

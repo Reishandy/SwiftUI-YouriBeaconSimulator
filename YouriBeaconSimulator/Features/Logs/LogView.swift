@@ -11,10 +11,12 @@ import SwiftData
 struct LogView: View {
 	@State var logViewModel: LogViewModel
 	
+	@Query(sort: \LogSession.startTime, order: .reverse) private var sessions: [LogSession]
+	
 	var body: some View {
 		NavigationStack {
 			Group {
-				if logViewModel.sessions.isEmpty {
+				if sessions.isEmpty {
 					EmptyStateView(
 						systemImage: "doc.text.magnifyingglass",
 						title: "No Logs Yet",
@@ -22,7 +24,7 @@ struct LogView: View {
 					)
 				} else {
 					List {
-						ForEach(logViewModel.sessions) { session in
+						ForEach(sessions) { session in
 							Section {
 								let sortedEvents = (session.events ?? []).sorted { $0.timestamp > $1.timestamp }
 								
@@ -32,17 +34,17 @@ struct LogView: View {
 										onEventDeleteClick: {
 											logViewModel.selectedEvent = event
 											logViewModel.isDeleteEventConfirmationPresented = true
-										},
-										onSessionDeleteClick: {
-											if let session = event.session {
-												logViewModel.selectedSession = session
-												logViewModel.isDeleteSessionConfirmationPresented = true
-											}
 										}
 									)
 								}
 							} header: {
-								LogSectionHeaderView(session: session)
+								LogSectionHeaderView(
+									session: session,
+									onSessionDeleteClick: {
+										logViewModel.selectedSession = session
+										logViewModel.isDeleteSessionConfirmationPresented = true
+									}
+								)
 							}
 						}
 					}
@@ -53,7 +55,7 @@ struct LogView: View {
 			}
 			.navigationTitle("Logs")
 			.toolbar {
-				if !logViewModel.sessions.isEmpty {
+				if !sessions.isEmpty {
 					ToolbarItem(placement: .primaryAction) {
 						Button(role: .destructive) {
 							logViewModel.showClearConfirmation = true
@@ -109,9 +111,6 @@ struct LogView: View {
 				}
 			} message: { session in
 				Text("Are you sure you want to delete this session and all its events?")
-			}
-			.onAppear {
-				logViewModel.fetchData()
 			}
 		}
 	}

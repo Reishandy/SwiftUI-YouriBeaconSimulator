@@ -14,8 +14,6 @@ import Observation
 class LogViewModel {
 	private var modelContext: ModelContext
 	
-	private(set) var sessions: [LogSession] = []
-	
 	var showClearConfirmation = false
 	
 	var selectedEvent: LogEvent?
@@ -25,25 +23,12 @@ class LogViewModel {
 	
 	init(modelContext: ModelContext) {
 		self.modelContext = modelContext
-		self.fetchData()
-	}
-	
-	func fetchData() {
-		do {
-			let descriptor = FetchDescriptor<LogSession>(
-				sortBy: [SortDescriptor(\.startTime, order: .reverse)]
-			)
-			self.sessions = try modelContext.fetch(descriptor)
-		} catch {
-			print("ERROR > Failed populating LogViewModel: \(error)")
-		}
 	}
 	
 	func clearAllLogs() {
 		do {
 			try modelContext.delete(model: LogSession.self)
 			try modelContext.save()
-			fetchData()
 		} catch {
 			print("ERROR > Failed to clear logs: \(error)")
 		}
@@ -55,7 +40,6 @@ class LogViewModel {
 		modelContext.delete(sessionToDelete)
 		do {
 			try modelContext.save()
-			fetchData()
 			selectedSession = nil
 		} catch {
 			print("ERROR > Failed to delete session: \(error)")
@@ -76,7 +60,6 @@ class LogViewModel {
 				try modelContext.save()
 			}
 			
-			fetchData()
 			selectedEvent = nil
 		} catch {
 			print("ERROR > Failed to delete event: \(error)")

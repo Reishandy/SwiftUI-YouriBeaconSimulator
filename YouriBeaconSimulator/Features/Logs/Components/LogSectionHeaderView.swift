@@ -9,6 +9,7 @@ import SwiftUI
 
 struct LogSectionHeaderView: View {
 	let session: LogSession
+	let onSessionDeleteClick: () -> Void
 	
 	var body: some View {
 		HStack {
@@ -25,6 +26,18 @@ struct LogSectionHeaderView: View {
 			.font(.caption2)
 			.foregroundStyle(.secondary)
 			.textCase(nil)
+			
+			Menu {
+				Button(role: .destructive) {
+					onSessionDeleteClick()
+				} label: {
+					Label("Delete Session", systemImage: "trash")
+				}
+			} label: {
+				Image(systemName: "trash")
+					.foregroundStyle(.red)
+					.font(.subheadline)
+			}
 		}
 	}
 }
@@ -32,12 +45,12 @@ struct LogSectionHeaderView: View {
 #Preview {
 	List {
 		Section {
-			LogItemView(event: LogEvent(message: "Test", category: .discovery), onEventDeleteClick: {}, onSessionDeleteClick: {})
-			LogItemView(event: LogEvent(message: "Test", category: .broadcast), onEventDeleteClick: {}, onSessionDeleteClick: {})
-			LogItemView(event: LogEvent(message: "Test", category: .background), onEventDeleteClick: {}, onSessionDeleteClick: {})
-			LogItemView(event: LogEvent(message: "This is a long as message that sometimes happens because it is logging you know? I don't even know what I am doing", category: .system), onEventDeleteClick: {}, onSessionDeleteClick: {})
+			LogItemView(event: LogEvent(message: "Test", category: .discovery), onEventDeleteClick: {})
+			LogItemView(event: LogEvent(message: "Test", category: .broadcast), onEventDeleteClick: {})
+			LogItemView(event: LogEvent(message: "Test", category: .background), onEventDeleteClick: {})
+			LogItemView(event: LogEvent(message: "This is a long as message that sometimes happens because it is logging you know? I don't even know what I am doing", category: .system), onEventDeleteClick: {})
 		} header: {
-			LogSectionHeaderView(session: LogSession())
+			LogSectionHeaderView(session: LogSession(), onSessionDeleteClick: {})
 		}
 	}
 	

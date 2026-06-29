@@ -32,7 +32,7 @@ class BeaconBroadcastService: BeaconBroadcasterDelegate {
 		self.logger = logger
 	}
 	
-	func startBroadcasting(beacon: BroadcastBeacon, txPower: Int8) {
+	func startBroadcasting(beacon: BroadcastBeacon, txPower: Int8, isChangePower: Bool = false) {
 		self.activeBeacon = beacon
 		self.pendingTxPower = txPower
 		
@@ -40,14 +40,18 @@ class BeaconBroadcastService: BeaconBroadcasterDelegate {
 		let major = UInt16(clamping: beacon.majorID)
 		let minor = UInt16(clamping: beacon.minorID)
 		
-		Task { await logger?.log(message: "Started broadcasting\n'\(beacon.beaconName)' (Major: \(major), Minor: \(minor))\nat \(txPower) dBm.", category: .broadcast) }
+		if !isChangePower {
+			Task { await logger?.log(message: "Started broadcasting\n'\(beacon.beaconName)' (Major: \(major), Minor: \(minor))\nat \(txPower) dBm.", category: .broadcast) }
+		}
 		
 		broadcaster.startBroadcasting(uuid: uuid, major: major, minor: minor, txPower: txPower)
 	}
 	
-	func stopBroadcasting() {
+	func stopBroadcasting(isChangePower: Bool = false) {
 		if let beacon = activeBeacon {
-			Task { await logger?.log(message: "Stopped broadcasting\n'\(beacon.beaconName)'", category: .broadcast) }
+			if !isChangePower {
+				Task { await logger?.log(message: "Stopped broadcasting\n'\(beacon.beaconName)'", category: .broadcast) }
+			}
 		}
 		
 		broadcaster.stopBroadcasting()
@@ -58,10 +62,10 @@ class BeaconBroadcastService: BeaconBroadcasterDelegate {
 	func updateTxPower(to newPower: Int8) {
 		guard let currentBeacon = activeBeacon else { return }
 		
-		Task { await logger?.log(message: "Updated TX Power form'\(currentBeacon.beaconName)'\nto \(newPower) dBm", category: .broadcast) }
+		Task { await logger?.log(message: "Updated TX Power for\n'\(currentBeacon.beaconName)'\ninto \(newPower) dBm", category: .broadcast) }
 		
-		stopBroadcasting()
-		startBroadcasting(beacon: currentBeacon, txPower: newPower)
+		stopBroadcasting(isChangePower: true)
+		startBroadcasting(beacon: currentBeacon, txPower: newPower, isChangePower: true)
 	}
 	
 	func broadcaster(_ broadcaster: BeaconBroadcaster, didUpdateState state: CBManagerState) {

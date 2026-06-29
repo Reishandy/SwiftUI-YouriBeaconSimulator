@@ -10,7 +10,6 @@ import SwiftUI
 struct LogItemView: View {
 	let event: LogEvent
 	let onEventDeleteClick: () -> Void
-	let onSessionDeleteClick: () -> Void
 	
 	var body: some View {
 		HStack(alignment: .top, spacing: 16) {
@@ -19,10 +18,18 @@ struct LogItemView: View {
 				.font(.title2)
 			
 			VStack(alignment: .leading, spacing: 4) {
-				Text(event.category.rawValue.uppercased())
-					.font(.caption2)
-					.bold()
-					.foregroundStyle(event.category.color)
+				HStack {
+					Text(event.category.rawValue.uppercased())
+						.font(.caption2)
+						.bold()
+						.foregroundStyle(event.category.color)
+					
+					Spacer()
+					
+					Text(event.timestamp.formatted(date: .omitted, time: .standard))
+						.font(.caption)
+						.foregroundStyle(.secondary)
+				}
 				
 				Text(event.message)
 					.font(.subheadline)
@@ -34,23 +41,19 @@ struct LogItemView: View {
 				dimensions[.leading]
 			}
 			
-			Spacer(minLength: 8)
-			
 #if os(macOS)
 			buttonComplex
 #endif
-			
-			Text(event.timestamp.formatted(date: .omitted, time: .standard))
-				.font(.caption)
-				.foregroundStyle(.secondary)
 		}
 		.padding(.vertical, 4)
+#if os(iOS)
 		.swipeActions(edge: .trailing, allowsFullSwipe: false) {
 			buttonComplex
 		}
 		.contextMenu {
 			buttonComplex
 		}
+#endif
 	}
 	
 	@ViewBuilder
@@ -58,14 +61,7 @@ struct LogItemView: View {
 		Button() {
 			onEventDeleteClick()
 		} label: {
-			Label("Delete Event", systemImage: "trash")
-		}
-		.tint(.red)
-		
-		Button() {
-			onSessionDeleteClick()
-		} label: {
-			Label("Delete Session", systemImage: "arrow.up.trash")
+			Label("Delete", systemImage: "trash")
 		}
 		.tint(.red)
 	}
@@ -73,9 +69,9 @@ struct LogItemView: View {
 
 #Preview {
 	List {
-		LogItemView(event: LogEvent(message: "Test", category: .discovery), onEventDeleteClick: {}, onSessionDeleteClick: {})
-		LogItemView(event: LogEvent(message: "Test", category: .broadcast), onEventDeleteClick: {}, onSessionDeleteClick: {})
-		LogItemView(event: LogEvent(message: "Test", category: .background), onEventDeleteClick: {}, onSessionDeleteClick: {})
-		LogItemView(event: LogEvent(message: "This is a long as message that sometimes happens because it is logging you know? I don't even know what I am doing", category: .system), onEventDeleteClick: {}, onSessionDeleteClick: {})
+		LogItemView(event: LogEvent(message: "Test", category: .discovery), onEventDeleteClick: {})
+		LogItemView(event: LogEvent(message: "Test", category: .broadcast), onEventDeleteClick: {})
+		LogItemView(event: LogEvent(message: "Test", category: .background), onEventDeleteClick: {})
+		LogItemView(event: LogEvent(message: "This is a long as message that sometimes happens because it is logging you know? I don't even know what I am doing", category: .system), onEventDeleteClick: {})
 	}
 }
