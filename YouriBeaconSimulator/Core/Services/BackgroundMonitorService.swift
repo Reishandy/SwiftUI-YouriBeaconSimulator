@@ -52,6 +52,8 @@ class BackgroundMonitorService: NSObject, CLLocationManagerDelegate {
 			region.notifyEntryStateOnDisplay = true
 			
 			locationManager.startMonitoring(for: region)
+			
+			Task { await logger?.log(message: "Enabled background notifications for UUID:\n\(uuid)", category: .background) }
 		}
 	}
 	

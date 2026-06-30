@@ -20,23 +20,26 @@ struct LogSectionHeaderView: View {
 			Spacer()
 			
 			HStack(spacing: 4) {
-				Image(systemName: "tag.fill")
+				Image(systemName: session.isActive ? "tag.circle" : "tag.fill")
+					.font(session.isActive ? .callout : .caption2)
 				Text(session.id.uuidString.prefix(8))
+					.font(session.isActive ? .caption : .caption2)
 			}
-			.font(.caption2)
-			.foregroundStyle(.secondary)
+			.foregroundStyle(session.isActive ? Color.accent : .secondary)
 			.textCase(nil)
 			
-			Menu {
-				Button(role: .destructive) {
-					onSessionDeleteClick()
+			if !session.isActive {
+				Menu {
+					Button(role: .destructive) {
+						onSessionDeleteClick()
+					} label: {
+						Label("Delete Session", systemImage: "trash")
+					}
 				} label: {
-					Label("Delete Session", systemImage: "trash")
+					Image(systemName: "trash")
+						.foregroundStyle(.red)
+						.font(.subheadline)
 				}
-			} label: {
-				Image(systemName: "trash")
-					.foregroundStyle(.red)
-					.font(.subheadline)
 			}
 		}
 	}
@@ -52,6 +55,14 @@ struct LogSectionHeaderView: View {
 		} header: {
 			LogSectionHeaderView(session: LogSession(), onSessionDeleteClick: {})
 		}
+		
+		Section {
+			LogItemView(event: LogEvent(message: "Test", category: .discovery), onEventDeleteClick: {})
+			LogItemView(event: LogEvent(message: "Test", category: .broadcast), onEventDeleteClick: {})
+			LogItemView(event: LogEvent(message: "Test", category: .background), onEventDeleteClick: {})
+			LogItemView(event: LogEvent(message: "This is a long as message that sometimes happens because it is logging you know? I don't even know what I am doing", category: .system), onEventDeleteClick: {})
+		} header: {
+			LogSectionHeaderView(session: LogSession(isActive: false), onSessionDeleteClick: {})
+		}
 	}
-	
 }

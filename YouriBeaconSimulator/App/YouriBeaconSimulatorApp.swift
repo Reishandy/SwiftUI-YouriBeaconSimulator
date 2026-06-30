@@ -23,6 +23,7 @@ struct YouriBeaconSimulatorApp: App {
 	@State var locationPermissionManager = LocationPermissionManager()
 	@State var bluetoothPermissionManager = BluetoothPermissionManager()
 	@State var notificationPermissionManager = NotificationPermissionManager()
+	@State var deviceIdentifierService = DeviceIdentifierService()
 	
 	@State var beaconBroadcastService = BeaconBroadcastService()
 	@State var beaconDiscoveryService = BeaconDiscoveryService()
@@ -31,7 +32,8 @@ struct YouriBeaconSimulatorApp: App {
 #if os(iOS)
 		return "\(UIDevice.current.name) (\(UIDevice.current.systemName) \(UIDevice.current.systemVersion))"
 #elseif os(macOS)
-		return Host.current().localizedName ?? "Mac"
+		let version = ProcessInfo.processInfo.operatingSystemVersion
+		return "\(Host.current().localizedName ?? "Mac") (macOS \(version.majorVersion).\(version.minorVersion).\(version.patchVersion))"
 #else
 		return "Unknown Device"
 #endif
@@ -70,21 +72,39 @@ struct YouriBeaconSimulatorApp: App {
 			.frame(minWidth: 700)
 			.frame(maxWidth: 1000)
 #endif
-			.task {
-				beaconBroadcastService.setLogger(loggingService)
-				beaconDiscoveryService.setLogger(loggingService)
-				BackgroundMonitorService.shared.setLogger(loggingService)
-				
-				await loggingService.startNewSession()
-				await loggingService.log(message: "App Session Started on \(deviceDescription)", category: .system)
-			}
 		}
 #if os(macOS)
 		.windowResizability(.contentSize)
 #endif
 		.onChange(of: scenePhase) { oldPhase, newPhase in
-			if newPhase == .background {
+			switch newPhase {
+			case .active:
+				// App launched or came back to the foreground
+				beaconBroadcastService.setLogger(loggingService)
+				beaconDiscoveryService.setLogger(loggingService)
+				BackgroundMonitorService.shared.setLogger(loggingService)
+				
+				Task {
+					await loggingService.startNewSession(
+						deviceDescription: deviceDescription,
+						deviceIdentifier: deviceIdentifierService.getDeviceUUID()
+					)
+				}
+				
+			case .background:
+				// App was hidden, swiped to home, or is about to be terminated
 				beaconBroadcastService.stopBroadcasting()
+				
+				Task {
+					await loggingService.endCurrentSession()
+				}
+				
+			case .inactive:
+				// App is transitioning (e.g., pulling down Control Center)
+				break
+				
+			@unknown default:
+				break
 			}
 		}
 	}

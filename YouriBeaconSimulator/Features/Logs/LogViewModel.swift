@@ -27,7 +27,13 @@ class LogViewModel {
 	
 	func clearAllLogs() {
 		do {
-			try modelContext.delete(model: LogSession.self)
+			let descriptor = FetchDescriptor<LogSession>(predicate: #Predicate<LogSession> { !$0.isActive })
+			let sessionsToDelete = try modelContext.fetch(descriptor)
+			
+			for session in sessionsToDelete {
+				modelContext.delete(session)
+			}
+			
 			try modelContext.save()
 		} catch {
 			print("ERROR > Failed to clear logs: \(error)")
@@ -36,6 +42,7 @@ class LogViewModel {
 	
 	func deleteSession() {
 		guard let sessionToDelete = selectedSession else { return }
+		guard !sessionToDelete.isActive else { return }
 		
 		modelContext.delete(sessionToDelete)
 		do {
@@ -48,6 +55,7 @@ class LogViewModel {
 	
 	func deleteEvent() {
 		guard let eventToDelete = selectedEvent else { return }
+		guard eventToDelete.category != .system else { return }
 		
 		let parentSession = eventToDelete.session
 		modelContext.delete(eventToDelete)
@@ -56,8 +64,10 @@ class LogViewModel {
 			try modelContext.save()
 			
 			if let session = parentSession, (session.events?.isEmpty ?? true) {
-				modelContext.delete(session)
-				try modelContext.save()
+				if !session.isActive {
+					modelContext.delete(session)
+					try modelContext.save()
+				}
 			}
 			
 			selectedEvent = nil

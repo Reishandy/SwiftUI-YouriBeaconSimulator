@@ -55,7 +55,7 @@ struct LogView: View {
 			}
 			.navigationTitle("Logs")
 			.toolbar {
-				if !sessions.isEmpty {
+				if sessions.contains(where: { !$0.isActive }) {
 					ToolbarItem(placement: .primaryAction) {
 						Button(role: .destructive) {
 							logViewModel.showClearConfirmation = true
