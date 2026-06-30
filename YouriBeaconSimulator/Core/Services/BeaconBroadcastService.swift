@@ -55,9 +55,9 @@ class BeaconBroadcastService: BeaconBroadcasterDelegate {
 			}
 		}
 		
-		broadcaster.stopBroadcasting()
 		activeBeacon = nil
 		pendingTxPower = nil
+		broadcaster.stopBroadcasting()
 	}
 	
 	func updateTxPower(to newPower: Int8) {
