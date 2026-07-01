@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="images/appicon.png" alt="Your iBeacon Simulator Logo" width="120">
+  <img src="images/appicon.png" alt="Your Beacon Simulator Logo" width="120">
 
-  # Your iBeacon Simulator
+  # Your Beacon Simulator
 
   A native, multi-platform utility designed to simulate, broadcast, and discover iBeacons across iOS, iPadOS, and macOS.
 
@@ -18,7 +18,7 @@
 
 ## Overview
 
-Your iBeacon Simulator eliminates the need for physical beacon hardware when testing location-based applications, indoor navigation, or proximity marketing triggers. Built entirely in modern Swift, it leverages device capabilities to turn your iPhone, iPad, or Mac into a fully functioning, configurable iBeacon, while also acting as a highly accurate scanner for existing beacons in your environment.
+Your Beacon Simulator eliminates the need for physical beacon hardware when testing location-based applications, indoor navigation, or proximity marketing triggers. Built entirely in modern Swift, it leverages device capabilities to turn your iPhone, iPad, or Mac into a fully functioning, configurable iBeacon, while also acting as a highly accurate scanner for existing beacons in your environment.
 
 ### iOS Previews
 
